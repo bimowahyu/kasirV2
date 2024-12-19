@@ -1,0 +1,15 @@
+body, html {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .transaction-container {
+    width: 500px; /* Ukuran tetap */
+    flex-shrink: 0;
+    overflow: auto;
+}
+@media (max-width: 768px) {
+    .transaction-container {
+        width: 40%;
+    }
+}

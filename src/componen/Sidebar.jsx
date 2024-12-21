@@ -99,33 +99,6 @@ export const Sidebar = () => {
             Transaction
             </Typography>
 
-        <Typography
-          component={Link}
-          href="/settings"
-          sx={{
-            textDecoration: 'none',
-            color: '#cbd5e1',
-            p: 1,
-            borderRadius: 1,
-            '&:hover': { bgcolor: '#374151', color: 'white' },
-          }}
-        >
-          Settings
-        </Typography>
-        <Typography
-            component={NavLink}
-            to="/order"
-            sx={{
-                textDecoration: 'none',
-                color: '#cbd5e1',
-                p: 1,
-                borderRadius: 1,
-                '&:hover': { bgcolor: '#374151', color: 'white' },
-                '&.active': { bgcolor: '#374151', color: 'white' }, 
-            }}
-            >
-            Order Page
-            </Typography>
             <Typography
             component={NavLink}
             to="/product"

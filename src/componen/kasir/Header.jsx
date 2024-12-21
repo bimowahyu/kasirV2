@@ -14,7 +14,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { NavLink, useNavigate } from "react-router-dom";
 import { Logout, reset } from '../../fitur/AuthSlice';
 import { useDispatch, useSelector } from "react-redux";
-import './Header.css'
+
 
 const Header = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -35,22 +35,18 @@ const Header = () => {
 
   return (
     <>
-      <AppBar 
-        position="static" 
-        color="primary" 
-        sx={{ margin: 0, padding: 0, width: '100%' }}
-      >
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={toggleDrawer(true)}>
-            <MenuIcon />
-          </IconButton>
-          {!isMobile && (
-            <Typography variant="h6" style={{ flexGrow: 1 }}>
-              Point Of Sales
-            </Typography>
-          )}
-        </Toolbar>
-      </AppBar>
+   <AppBar position="static" color="primary" sx={{ margin: 0, padding: 0, width: '100%' }}>
+  <Toolbar sx={{ display: 'flex', justifyContent: isMobile ? 'flex-start' : 'space-between' }}>
+    <IconButton edge="start" color="inherit" onClick={toggleDrawer(true)}>
+      <MenuIcon />
+    </IconButton>
+    {!isMobile && (
+      <Typography variant="h6">
+        Point Of Sales
+      </Typography>
+    )}
+  </Toolbar>
+</AppBar>
 
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
         <List style={{ width: 250 }}>

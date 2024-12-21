@@ -61,7 +61,24 @@ export const Invoice = () => {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Penjualan");
     XLSX.writeFile(workbook, `Laporan_Penjualan_${selectedMonth}.xlsx`);
   };
-
+  const exportCabangToExcel = async () => {
+    try {
+      const response = await axios.get(`${getApiBaseUrl()}/export-laporan?month=${selectedMonth}`, {
+        withCredentials: true,
+        responseType: 'blob'
+      });
+  
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Laporan_Penjualan_${selectedMonth}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+    }
+  };
   return (
     <Box>
       <Card>
@@ -80,7 +97,11 @@ export const Invoice = () => {
             Export to Excel
           </Button>
         </Box>
-
+        {/* <Box p={2} display="flex" justifyContent="flex-end">
+        <Button variant="contained" color="primary" onClick={exportCabangToExcel}>
+          Export Cabang ke Excel
+        </Button>
+      </Box> */}
         {Object.keys(detailPenjualan).length > 0 ? (
           Object.entries(detailPenjualan).map(([cabang, dataCabang]) => (
             <Box key={cabang} mb={4}>

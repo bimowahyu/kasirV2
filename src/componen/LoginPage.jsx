@@ -36,7 +36,10 @@ export const LoginPage = () => {
   const dispatch = useDispatch();
 
   const { user, isError, isSuccess, isLoading, message } = useSelector((state) => state.auth);
-
+  const fetcher = (url) =>
+    axios
+      .get(url, { withCredentials: true }) 
+      .then((res) => res.data);
   const { data, error } = useSWR(`${getApiBaseUrl()}/`, fetcher);
 
   useEffect(() => {

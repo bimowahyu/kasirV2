@@ -4,7 +4,7 @@ body, html {
   }
   
   .transaction-container {
-    width: 500px; /* Ukuran tetap */
+    width: 450px; /* Ukuran tetap */
     flex-shrink: 0;
     overflow: auto;
 }

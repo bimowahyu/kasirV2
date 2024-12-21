@@ -85,6 +85,7 @@ await axios.delete(`${getApiBaseUrl()}/logout`);
             state.isLoading = true;
         });
         builder.addCase(Me.fulfilled, (state, action) => {
+            //console.log('Data pengguna dari API /me:', action.payload);
             state.isLoading = false;
             state.isSuccess = true;
             state.user = action.payload;

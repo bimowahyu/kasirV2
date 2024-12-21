@@ -3,10 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Me } from '../fitur/AuthSlice';
 import ProfileKasirLayout from '../layout.jsx/ProfilKasirLayout';
+
 export const ProfileKasirPages = () => {
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isError } = useSelector((state) => state.auth);
+  const { user, isError } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,9 +25,10 @@ export const ProfileKasirPages = () => {
       navigate('/');
     }
   }, [isError, navigate]);
+
   return (
-  <>
-    <ProfileKasirLayout />
+    <>
+      <ProfileKasirLayout userUuid={user?.uuid} />
     </>
-  )
-}
+  );
+};

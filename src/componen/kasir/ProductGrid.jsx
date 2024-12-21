@@ -24,10 +24,15 @@ import {
   DialogContent, 
   DialogActions,
   TextField,
+  IconButton,
+  InputBase,
   Divider
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 import Swal from "sweetalert2";
+import { useSelector } from 'react-redux';
 
 const getApiBaseUrl = () => {
   const protocol = window.location.protocol === "https:" ? "https" : "http";
@@ -46,7 +51,11 @@ const ProductGrid = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   const [customerCash, setCustomerCash] = useState("");
   const [receiptData, setReceiptData] = useState([]);
+  const [branchName, setBranchName] = useState("Nama Toko");
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const user = useSelector((state) => state.auth.user);
   const formatDate = (date) => {
     return new Intl.DateTimeFormat("id-ID", {
       year: "numeric",
@@ -75,6 +84,18 @@ const ProductGrid = () => {
     };
 
     fetchProductsAndCategories();
+  }, []);
+  useEffect(() => {
+    const fetchBranchName = async () => {
+      try {
+        const response = await axios.get(`${getApiBaseUrl()}/cabang`, { withCredentials: true });
+        setBranchName(response.data.branchName || "Nama Toko Tidak Diketahui");
+      } catch (err) {
+        console.error("Gagal mendapatkan nama cabang:", err);
+      }
+    };
+  
+    fetchBranchName();
   }, []);
 
 
@@ -133,7 +154,7 @@ const ProductGrid = () => {
           </style>
         </head>
         <body>
-          <h2>NAMA TOKO ANDA</h2>
+          <h2>${branchName}</h2>
           <p style="text-align: center;">${formatDate(new Date())}</p>
           <hr />
           <ul>
@@ -321,7 +342,8 @@ const ProductGrid = () => {
         <DialogTitle>Struk Pembelian</DialogTitle>
         <DialogContent>
           <div id="receipt-preview" style={{ minWidth: "300px" }}>
-            <Typography variant="h6" align="center">NAMA TOKO</Typography>
+          <Typography variant="h6" align="center">{user?.cabang?.namacabang || "Cabang Tidak Diketahui"}</Typography>
+
             <Typography variant="body2" align="center" gutterBottom>
               {formatDate(new Date())}
             </Typography>
@@ -357,9 +379,14 @@ const ProductGrid = () => {
       </Dialog>
     );
   };
-  const filteredProducts = selectedCategory
-    ? products.filter((product) => product.Kategori?.namakategori === selectedCategory)
-    : products;
+  const filteredProducts = products.filter((product) => {
+    const matchesCategory =
+      !selectedCategory || product.Kategori.namakategori === selectedCategory;
+    const matchesSearch =
+      !searchTerm ||
+      product.namabarang.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">Gagal memuat data produk.</Alert>;
@@ -402,6 +429,7 @@ const ProductGrid = () => {
     maxHeight: '100vh',
   }}
 >
+
   {/* Filter Kategori */}
   <FormControl fullWidth>
     <InputLabel id="category-filter-label">Filter Kategori</InputLabel>
@@ -418,6 +446,40 @@ const ProductGrid = () => {
         </MenuItem>
       ))}
     </Select>
+    <Box sx={{ position: 'relative'}}>
+          {showSearch ? (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: '#f1f1f1',
+               
+                
+              }}
+            >
+              <InputBase
+                placeholder="Cari produk"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                sx={{ flex: 1 }}
+              />
+              <IconButton onClick={() => setShowSearch(false)}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          ) : (
+            <IconButton
+              onClick={() => setShowSearch(true)}
+              sx={{
+                backgroundColor: '#f1f1f1',
+              
+               
+              }}
+            >
+              <SearchIcon />
+            </IconButton>
+          )}
+        </Box>
   </FormControl>
 
   {/* Grid Produk */}

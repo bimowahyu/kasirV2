@@ -129,6 +129,19 @@ export const Sidebar = () => {
             </Typography>
             <Typography
             component={NavLink}
+            to="/setprodukpercabang"
+            sx={{
+                textDecoration: 'none',
+                color: '#cbd5e1',
+                p: 1,
+                borderRadius: 1,
+                '&:hover': { bgcolor: '#374151', color: 'white' },
+                '&.active': { bgcolor: '#374151', color: 'white' }, 
+            }}
+            >Set Produk
+              </Typography>
+            <Typography
+            component={NavLink}
             to="/branch"
             sx={{
                 textDecoration: 'none',

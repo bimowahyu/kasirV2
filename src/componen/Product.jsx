@@ -54,7 +54,6 @@ export const Product = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const itemsPerPage = 5;
 
-  // Effect untuk memproses filter
   useEffect(() => {
     if (products) {
       const filtered = filters.kategori === ""
@@ -70,17 +69,16 @@ export const Product = () => {
       
       console.log('Filtered results:', filtered.length);
       setFilteredProducts(filtered);
-      setCurrentPage(1); // Reset page when filter changes
+      setCurrentPage(1);
     }
   }, [filters.kategori, products]);
 
-  // Get paginated data
+  
   const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  // Calculate total pages
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   const handlePageChange = (event, value) => {

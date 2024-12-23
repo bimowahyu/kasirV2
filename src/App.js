@@ -15,6 +15,8 @@ import { TransaksiKasirPages } from './pages/TransaksiKasirPages';
 import { BranchPages } from './pages/BranchPages';
 import { PrivateRoute } from './PrivateRoute';
 import { InvoicePages } from './pages/InvoicePages';
+import ProductPerCabang from './componen/kasir/ProductPerCabang';//view transaksi kasir
+import SetProdukCabangPages from './pages/SetProdukCabangPages';
 
 function App() {
   return (
@@ -32,6 +34,7 @@ function App() {
           <Route path="/category" element={<CategoryPages />} />
           <Route path="/profilekasir" element={<ProfileKasirPages />} />
           <Route path="/laporan" element={<InvoicePages />} />
+          <Route path="/setprodukpercabang" element={<SetProdukCabangPages />} />
           <Route
             path="/transaksikasir"
             element={
@@ -41,6 +44,9 @@ function App() {
               />
             }
           />
+           {/* view transaksi kasir */}
+           <Route path="/produkpercabang" element={<ProductPerCabang />} /> 
+          {/* view transaksi kasir */}
         </Routes>
       </BrowserRouter>
     </Provider>

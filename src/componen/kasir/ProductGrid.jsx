@@ -142,12 +142,13 @@ const ProductGrid = () => {
     );
   
     const receiptContent = `
+      <!DOCTYPE html>
       <html>
         <head>
-          <title>Struk Pembelian</title>
+          <title>Receipt</title>
           <style>
             @page {
-              size: 58mm 100%;
+              size: 58mm auto;  /* Ubah ke auto untuk menyesuaikan tinggi */
               margin: 0;
             }
             body {
@@ -194,10 +195,15 @@ const ProductGrid = () => {
               font-size: 9pt;
               margin: 2mm 0;
             }
-            .footer {
-              text-align: center;
-              font-size: 7pt;
-              margin-top: 3mm;
+            .payment-method {
+              text-align: left;
+              font-size: 8pt;
+              margin: 2mm 0;
+            }
+            @media print {
+              #btn-cetak, #btn-tutup {
+                  display: none;
+              }
             }
           </style>
         </head>
@@ -223,16 +229,15 @@ const ProductGrid = () => {
           </ul>
           <div class="divider"></div>
           <h3 class="total">Total: Rp ${total.toLocaleString()}</h3>
-          <div class="footer">
-            <p>Terima kasih telah berbelanja!</p>
-          </div>
+          <p class="payment-method">Metode Pembayaran: ${receiptData.paymentMethod}</p>
         </body>
       </html>
     `;
   
     const iframe = document.createElement("iframe");
-    iframe.style.position = "absolute";
+    iframe.style.position = "fixed";
     iframe.style.top = "-10000px";
+    iframe.style.left = "-10000px";
     document.body.appendChild(iframe);
   
     const iframeDoc = iframe.contentWindow || iframe.contentDocument;
@@ -240,12 +245,11 @@ const ProductGrid = () => {
     iframeDoc.document.write(receiptContent);
     iframeDoc.document.close();
   
-    setTimeout(() => {
+    iframe.onload = () => {
       iframe.contentWindow.print();
       document.body.removeChild(iframe);
-    }, 500);
-  };
-  
+    };
+};
   // **Proses Pembayaran Tunai**
   const processCashPayment = async (total) => {
     if (!customerCash || parseFloat(customerCash) < total) {
@@ -338,7 +342,7 @@ const ProductGrid = () => {
       startPaymentStatusPolling(orderId, () => {
         setReceiptData({
           total,
-          paymentMethod: "Cash",
+          paymentMethod: "Qris",
           items: orders.map((order) => ({
             id: order.id,
             name: order.name,
@@ -396,7 +400,7 @@ const ProductGrid = () => {
   
     return (
       <Dialog open={receiptDialogOpen} onClose={() => setReceiptDialogOpen(false)}>
-        <DialogTitle>Struk Pembelian</DialogTitle>
+        {/* <DialogTitle>Struk Pembelian</DialogTitle> */}
         <DialogContent>
           <div id="receipt-preview" style={{ minWidth: "300px" }}>
           <Typography variant="h6" align="center">{user?.cabang?.namacabang || "Cabang Tidak Diketahui"}</Typography>
@@ -426,10 +430,10 @@ const ProductGrid = () => {
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={printReceipt} color="primary">
+        <Button id="btn-cetak" onClick={printReceipt} color="primary">
             Cetak
           </Button>
-          <Button onClick={() => setReceiptDialogOpen(false)} color="secondary">
+          <Button id="btn-tutup" onClick={() => setReceiptDialogOpen(false)} color="secondary">
             Tutup
           </Button>
         </DialogActions>

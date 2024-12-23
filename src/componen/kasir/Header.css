@@ -13,3 +13,19 @@ body, html {
         width: 40%;
     }
 }
+@media print {
+    body {
+        width: 58mm;
+        margin: 0;
+        padding: 0;
+        font-size: 12px; /* Sesuaikan ukuran font */
+    }
+    #btn-cetak, #btn-tutup {
+        display: none;
+    }
+}
+@page {
+    size: 58mm auto; /* Lebar 58mm, tinggi otomatis */
+    margin: 0;
+}
+

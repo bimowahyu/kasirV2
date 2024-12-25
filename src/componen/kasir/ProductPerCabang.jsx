@@ -34,6 +34,7 @@ import axios from 'axios';
 import Swal from "sweetalert2";
 import { useDispatch, useSelector } from 'react-redux';
 import { Me } from '../../fitur/AuthSlice';
+import { replace } from 'react-router-dom';
 
 const getApiBaseUrl = () => {
   const protocol = window.location.protocol === "https:" ? "https" : "http";
@@ -58,7 +59,8 @@ const ProductPerCabang = () => {
   const [showSearch, setShowSearch] = useState(false);
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
-  console.log("User State:", user); 
+   const [customerName, setCustomerName] = useState("");
+  //console.log("User State:", user); 
   const formatDate = (date) => {
     return new Intl.DateTimeFormat("id-ID", {
       year: "numeric",
@@ -96,6 +98,7 @@ const ProductPerCabang = () => {
         setBranchName(response.data.branchName || "Nama Toko Tidak Diketahui");
       } catch (err) {
         console.error("Gagal mendapatkan nama cabang:", err);
+        setBranchName("Nama Toko Tidak Diketahui");
       }
     };
   
@@ -183,8 +186,8 @@ const ProductPerCabang = () => {
         items: orders.map((order) => ({
           id: order.id,
           name: order.name,
-          quantity: order.quantity,
           price: order.price,
+          quantity: order.quantity,
         })),
       });
       console.log(change)
@@ -243,16 +246,14 @@ const ProductPerCabang = () => {
       startPaymentStatusPolling(orderId, () => {
         setReceiptData({
           total,
-          paymentMethod: selectedPaymentMethod,
-          items: orders.map((order) => ({
-            id: order.id,
-            Barang: {
-              namabarang: order.name,
-              harga: order.price,
-            },
-            quantity: order.quantity,
-          })),
-        });
+          paymentMethod: "Qris",
+    items: orders.map((order) => ({
+      id: order.id,
+      name: order.name,
+      price: order.price,
+      quantity: order.quantity,
+    })),
+  });
         setReceiptDialogOpen(true);
         setOrders([]); 
       });
@@ -296,30 +297,30 @@ const ProductPerCabang = () => {
       } catch (error) {
         console.error("Error checking payment status:", error);
       }
-    }, 5000); // Poll setiap 5 detik
+    }, 5000); 
   
-    // Hentikan polling setelah 5 menit
+
     setTimeout(() => clearInterval(pollInterval), 300000);
   };
   const ReceiptDialog = () => {
     const items = Array.isArray(receiptData?.items) ? receiptData.items : [];
-    //console.log("Receipt Items:", receiptData.items);
-  
-    // Hitung total keseluruhan
     const totalKeseluruhan = items.reduce(
       (sum, order) => sum + (order.price || 0) * (order.quantity || 0),
       0
     );
+    const change = parseFloat(customerCash || 0) - totalKeseluruhan;
   
     return (
       <Dialog open={receiptDialogOpen} onClose={() => setReceiptDialogOpen(false)}>
-        <DialogTitle>Struk Pembelian</DialogTitle>
+        <DialogTitle align="center">Struk Pembelian</DialogTitle>
         <DialogContent>
           <div id="receipt-preview" style={{ minWidth: "300px" }}>
             <Typography variant="h6" align="center">
               {user?.cabang?.namacabang || "Cabang Tidak Diketahui"}
             </Typography>
-  
+            <Typography align="center">
+              Pemesan: {customerName || "Tidak Diketahui"}
+            </Typography>
             <Typography variant="body2" align="center" gutterBottom>
               {formatDate(new Date())}
             </Typography>
@@ -329,37 +330,49 @@ const ProductPerCabang = () => {
                 <ListItem key={order.id || index} style={{ padding: "4px 0" }}>
                   <ListItemText
                     primary={order.name || "Nama barang tidak tersedia"}
-                    secondary={`Rp ${formatCurrency(order.price || 0)} x ${
-                      order.quantity || 0
-                    }`}
+                    secondary={`Rp ${order.price.toLocaleString()} x ${order.quantity || 0}`}
                   />
                   <Typography>
-                    Rp{" "}
-                    {formatCurrency((order.price || 0) * (order.quantity || 0))}
+                    Rp {(order.price * order.quantity).toLocaleString()}
                   </Typography>
                 </ListItem>
               ))}
             </List>
             <Divider style={{ margin: "10px 0" }} />
             <Typography variant="h6" align="right" gutterBottom>
-              Total: Rp {formatCurrency(totalKeseluruhan)}
+              Total: Rp {totalKeseluruhan.toLocaleString()}
             </Typography>
+            {receiptData.paymentMethod === "Cash" && (
+              <>
+                <Typography variant="h6" align="right" gutterBottom>
+                  Uang Customer: Rp {parseFloat(customerCash || 0).toLocaleString()}
+                </Typography>
+                <Typography variant="h6" align="right" gutterBottom>
+                  Kembalian: Rp {change > 0 ? change.toLocaleString() : 0}
+                </Typography>
+              </>
+            )}
             <Typography variant="body2" align="center">
               Metode Pembayaran: {receiptData?.paymentMethod || "Tidak diketahui"}
             </Typography>
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={printReceipt} color="primary">
+          <Button id="btn-cetak" onClick={printReceipt} color="primary">
             Cetak
           </Button>
-          <Button onClick={() => setReceiptDialogOpen(false)} color="secondary">
+          <Button
+            id="btn-tutup"
+            onClick={() => setReceiptDialogOpen(false)}
+            color="secondary"
+          >
             Tutup
           </Button>
         </DialogActions>
       </Dialog>
     );
   };
+  
   
   const filteredProducts = products.filter((product) => {
     // Memastikan Barang dan Kategori ada sebelum melakukan filter
@@ -399,23 +412,22 @@ const ProductPerCabang = () => {
       Swal.fire("Tidak ada data untuk dicetak", "", "error");
       return;
     }
-
+  
     const total = receiptData.items.reduce(
       (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
       0
     );
-
-    // Mengakses data cabang dari struktur user yang benar
-    const cabangName = user?.data?.cabang?.namacabang || "Cabang Tidak Diketahui";
-    console.log("User Data for Receipt:", user); // Untuk debugging
-
+  
+    const change = parseFloat(customerCash || 0) - total;
+  
     const receiptContent = `
+      <!DOCTYPE html>
       <html>
         <head>
           <title>Struk Pembelian</title>
           <style>
             @page {
-              size: 58mm 100%;
+              size: 58mm auto;
               margin: 0;
             }
             body {
@@ -428,12 +440,11 @@ const ProductPerCabang = () => {
             }
             .header {
               text-align: center;
-              margin-bottom: 3mm;
+              margin-bottom: 5mm;
             }
             .store-name {
               font-size: 10pt;
               font-weight: bold;
-              margin: 0;
             }
             .date {
               font-size: 8pt;
@@ -441,7 +452,7 @@ const ProductPerCabang = () => {
             }
             .divider {
               border-top: 1px dashed #000;
-              margin: 2mm 0;
+              margin: 3mm 0;
             }
             .items {
               list-style: none;
@@ -450,37 +461,32 @@ const ProductPerCabang = () => {
             }
             .item {
               margin-bottom: 2mm;
-            }
-            .item-name {
-              font-size: 8pt;
-              margin: 0;
-            }
-            .item-details {
               display: flex;
               justify-content: space-between;
               font-size: 8pt;
             }
-            .total {
+            .total, .change {
               text-align: right;
-              font-weight: bold;
               font-size: 9pt;
-              margin: 2mm 0;
+              font-weight: bold;
+              margin: 3mm 0;
             }
             .payment-method {
               text-align: center;
               font-size: 8pt;
-              margin-top: 2mm;
+              margin-top: 3mm;
             }
             .footer {
               text-align: center;
               font-size: 7pt;
-              margin-top: 3mm;
+              margin-top: 5mm;
             }
           </style>
         </head>
         <body>
           <div class="header">
-            <p class="store-name">${cabangName}</p>
+            <p class="store-name">${branchName || user?.cabang?.namacabang || "Cabang Tidak Diketahui"}</p>
+            <p class="customer-name">Pemesan: ${customerName || "Tidak Diketahui"}</p>
             <p class="date">${formatDate(new Date())}</p>
           </div>
           <div class="divider"></div>
@@ -489,41 +495,49 @@ const ProductPerCabang = () => {
               .map(
                 (order) => `
                   <li class="item">
-                    <p class="item-name">${order.name || "Barang tidak tersedia"}</p>
-                    <div class="item-details">
-                      <span>${order.quantity}x @ Rp ${formatCurrency(order.price || 0)}</span>
-                      <span>Rp ${formatCurrency((order.price || 0) * (order.quantity || 0))}</span>
-                    </div>
+                    <span>${order.name || "Barang tidak tersedia"}</span>
+                    <span>${order.quantity || 0} x Rp ${order.price.toLocaleString()} = Rp ${(order.price * order.quantity).toLocaleString()}</span>
                   </li>
                 `
               )
               .join("")}
           </ul>
           <div class="divider"></div>
-          <p class="total">Total: Rp ${formatCurrency(total)}</p>
-          <p class="payment-method">Pembayaran: ${receiptData.paymentMethod || "Tidak diketahui"}</p>
-          <div class="divider"></div>
-          <p class="footer">Terima kasih atas kunjungan Anda</p>
+          <p class="total">Total: Rp ${total.toLocaleString()}</p>
+          ${
+            receiptData.paymentMethod === "Cash"
+              ? `<p class="total">Uang Customer: Rp ${parseFloat(customerCash || 0).toLocaleString()}</p>
+                 <p class="change">Kembalian: Rp ${change > 0 ? change.toLocaleString() : 0}</p>`
+              : ""
+          }
+          <p class="payment-method">Metode Pembayaran: ${receiptData.paymentMethod || "Tidak diketahui"}</p>
+          <div class="footer">Terima kasih atas kunjungan Anda</div>
         </body>
       </html>
     `;
-
+  
     const iframe = document.createElement("iframe");
     iframe.style.position = "absolute";
     iframe.style.top = "-10000px";
     document.body.appendChild(iframe);
-
+  
     const iframeDoc = iframe.contentWindow || iframe.contentDocument;
     iframeDoc.document.open();
     iframeDoc.document.write(receiptContent);
     iframeDoc.document.close();
-
+  
     setTimeout(() => {
       iframe.contentWindow.print();
       document.body.removeChild(iframe);
     }, 500);
   };
-
+  
+const formatRupiah = (value) =>{
+  if(!value)return "";
+  return value
+  .toString()
+ .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
   return (
 <div
   style={{
@@ -628,7 +642,7 @@ const ProductPerCabang = () => {
               {product?.Barang?.namabarang}
             </Typography>
             <Typography color="textSecondary">
-            Rp {product?.Barang?.harga}
+            Rp {parseFloat(product?.Barang?.harga).toLocaleString("id-ID", {maximumFractionDigits: 0})}
             </Typography>
             <Typography color="textSecondary">
               Kategori: {product?.Barang?.Kategori?.namakategori}
@@ -675,11 +689,11 @@ const ProductPerCabang = () => {
         {/* Nama Barang dan Harga */}
         <Box
           sx={{
-            flexGrow: 1, // Memanfaatkan ruang yang tersedia
+            flexGrow: 1,
             overflow: "hidden",
             textOverflow: "ellipsis",
-            whiteSpace: "nowrap", // Nama barang tidak multi-baris
-            minWidth: "0", // Mencegah overflow
+            whiteSpace: "nowrap", 
+            minWidth: "0", 
           }}
         >
           <Typography variant="body1" sx={{ fontWeight: "bold" }}>
@@ -766,6 +780,15 @@ const ProductPerCabang = () => {
   <DialogContent>
     <FormControl fullWidth>
       <InputLabel id="payment-method-label">Metode Pembayaran</InputLabel>
+          {selectedPaymentMethod && (
+         <TextField
+           fullWidth
+           margin="normal"
+           label="Nama Pemesan"
+           value={customerName}
+           onChange={(e) => setCustomerName(e.target.value)}
+         />
+      )}    
       <Select
         labelId="payment-method-label"
         value={selectedPaymentMethod}
@@ -782,8 +805,13 @@ const ProductPerCabang = () => {
         margin="normal"
         label="Uang Customer"
         type="number"
-        value={customerCash}
-        onChange={(e) => setCustomerCash(e.target.value)}
+        value={formatRupiah(customerCash)}
+        onChange={(e) => {
+          const rawValue = e.target.value.replace(/\./g, "");
+          if (!isNaN(rawValue)) {
+            setCustomerCash(rawValue);
+          }
+        }}
       />
     )}
   </DialogContent>

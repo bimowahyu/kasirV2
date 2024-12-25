@@ -28,8 +28,7 @@ import {
   InputBase,
   Divider
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import CloseIcon from '@mui/icons-material/Close';
+import { Search as SearchIcon, Close as CloseIcon } from "@mui/icons-material";
 import axios from 'axios';
 import Swal from "sweetalert2";
 import { useSelector } from 'react-redux';
@@ -55,6 +54,7 @@ const ProductGrid = () => {
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [customerName, setCustomerName] = useState("");
   const user = useSelector((state) => state.auth.user);
   const formatDate = (date) => {
     return new Intl.DateTimeFormat("id-ID", {
@@ -140,15 +140,16 @@ const ProductGrid = () => {
       (sum, item) => sum + item.price * item.quantity,
       0
     );
+    const change = parseFloat(customerCash || 0) - total;
   
     const receiptContent = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Receipt</title>
+          <title>Struk Pembelian</title>
           <style>
             @page {
-              size: 58mm auto;  /* Ubah ke auto untuk menyesuaikan tinggi */
+              size: 58mm auto;
               margin: 0;
             }
             body {
@@ -161,7 +162,7 @@ const ProductGrid = () => {
             }
             .header {
               text-align: center;
-              margin-bottom: 3mm;
+              margin-bottom: 5mm;
             }
             .store-name {
               font-size: 10pt;
@@ -186,19 +187,27 @@ const ProductGrid = () => {
               display: flex;
               justify-content: space-between;
             }
+            .item-name {
+              font-size: 8pt;
+              flex: 1;
+            }
             .item-details {
-              font-size: 8pt;
-            }
-            .total {
               text-align: right;
-              font-weight: bold;
+              font-size: 8pt;
+              flex: 1;
+            }
+            .total,
+            .payment-method,
+            .change {
+              text-align: right;
               font-size: 9pt;
+              font-weight: bold;
               margin: 2mm 0;
             }
-            .payment-method {
-              text-align: left;
-              font-size: 8pt;
-              margin: 2mm 0;
+            .footer {
+              text-align: center;
+              font-size: 7pt;
+              margin-top: 5mm;
             }
             @media print {
               #btn-cetak, #btn-tutup {
@@ -210,6 +219,7 @@ const ProductGrid = () => {
         <body>
           <div class="header">
             <h2 class="store-name">${branchName || user?.cabang?.namacabang || "Cabang Tidak Diketahui"}</h2>
+            <p>Pemesan: ${customerName || "Tidak Diketahui"}</p>
             <p class="date">${formatDate(new Date())}</p>
           </div>
           <div class="divider"></div>
@@ -218,7 +228,7 @@ const ProductGrid = () => {
               .map(
                 (order) => `
                   <li class="item">
-                    <span class="item-details">${order.name}</span>
+                    <span class="item-name">${order.name}</span>
                     <span class="item-details">
                       ${order.quantity} x Rp ${order.price.toLocaleString()} = Rp ${(order.price * order.quantity).toLocaleString()}
                     </span>
@@ -228,8 +238,15 @@ const ProductGrid = () => {
               .join("")}
           </ul>
           <div class="divider"></div>
-          <h3 class="total">Total: Rp ${total.toLocaleString()}</h3>
+          <p class="total">Total: Rp ${total.toLocaleString()}</p>
+          ${
+            receiptData.paymentMethod === "Cash"
+              ? `<p class="total">Uang Customer: Rp ${parseFloat(customerCash || 0).toLocaleString()}</p>
+                 <p class="change">Kembalian: Rp ${change > 0 ? change.toLocaleString() : 0}</p>`
+              : ""
+          }
           <p class="payment-method">Metode Pembayaran: ${receiptData.paymentMethod}</p>
+          <div class="footer">Terima kasih atas kunjungan Anda</div>
         </body>
       </html>
     `;
@@ -249,7 +266,8 @@ const ProductGrid = () => {
       iframe.contentWindow.print();
       document.body.removeChild(iframe);
     };
-};
+  };
+  
   // **Proses Pembayaran Tunai**
   const processCashPayment = async (total) => {
     if (!customerCash || parseFloat(customerCash) < total) {
@@ -378,7 +396,7 @@ const ProductGrid = () => {
             text: "Terima kasih atas pembayaran Anda.",
             icon: "success",
           });
-          if (onSuccess) onSuccess(); // Callback untuk aksi tambahan
+          if (onSuccess) onSuccess(); 
         } else if (status === "expire" || status === "cancel") {
           clearInterval(pollInterval);
           Swal.fire({
@@ -390,21 +408,24 @@ const ProductGrid = () => {
       } catch (error) {
         console.error("Error checking payment status:", error);
       }
-    }, 5000); // Poll setiap 5 detik
-  
-    // Hentikan polling setelah 5 menit
+    }, 5000); 
     setTimeout(() => clearInterval(pollInterval), 300000);
   };
   const ReceiptDialog = () => {
     const items = Array.isArray(receiptData?.items) ? receiptData.items : [];
+    const total = items.reduce((sum, order) => sum + order.price * order.quantity, 0);
+    const change = parseFloat(customerCash || 0) - total;
   
     return (
       <Dialog open={receiptDialogOpen} onClose={() => setReceiptDialogOpen(false)}>
-        {/* <DialogTitle>Struk Pembelian</DialogTitle> */}
         <DialogContent>
           <div id="receipt-preview" style={{ minWidth: "300px" }}>
-          <Typography variant="h6" align="center">{user?.cabang?.namacabang || "Cabang Tidak Diketahui"}</Typography>
-
+            <Typography variant="h6" align="center">
+              {user?.cabang?.namacabang || "Cabang Tidak Diketahui"}
+            </Typography>
+            <Typography align="center">
+              Pemesan: {customerName || "Tidak Diketahui"}
+            </Typography>
             <Typography variant="body2" align="center" gutterBottom>
               {formatDate(new Date())}
             </Typography>
@@ -416,13 +437,25 @@ const ProductGrid = () => {
                     primary={order.name}
                     secondary={`${order.quantity} x Rp ${order.price.toLocaleString()}`}
                   />
-                  <Typography>Rp {(order.price * order.quantity).toLocaleString()}</Typography>
+                  <Typography>
+                    Rp {(order.price * order.quantity).toLocaleString()}
+                  </Typography>
                 </ListItem>
               ))}
             </List>
             <Divider style={{ margin: "10px 0" }} />
+            {receiptData.paymentMethod === "Cash" && (
+              <>
+                <Typography variant="body1" align="right" gutterBottom>
+                  Uang Customer: Rp {parseFloat(customerCash || 0).toLocaleString()}
+                </Typography>
+                <Typography variant="body1" align="right" gutterBottom>
+                  Kembalian: Rp {change > 0 ? change.toLocaleString() : 0}
+                </Typography>
+              </>
+            )}
             <Typography variant="h6" align="right" gutterBottom>
-              Total: Rp {items.reduce((sum, order) => sum + order.price * order.quantity, 0).toLocaleString()}
+              Total: Rp {total.toLocaleString()}
             </Typography>
             <Typography variant="body2" align="center">
               Metode Pembayaran: {receiptData?.paymentMethod || "Tidak diketahui"}
@@ -430,10 +463,14 @@ const ProductGrid = () => {
           </div>
         </DialogContent>
         <DialogActions>
-        <Button id="btn-cetak" onClick={printReceipt} color="primary">
+          <Button id="btn-cetak" onClick={printReceipt} color="primary">
             Cetak
           </Button>
-          <Button id="btn-tutup" onClick={() => setReceiptDialogOpen(false)} color="secondary">
+          <Button
+            id="btn-tutup"
+            onClick={() => setReceiptDialogOpen(false)}
+            color="secondary"
+          >
             Tutup
           </Button>
         </DialogActions>
@@ -468,15 +505,22 @@ const ProductGrid = () => {
       )
     );
   };
+  const formatRupiah = (value) =>{
+    if(!value)return "";
+    return value
+    .toString()
+   .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
   
   return (
 <div
   style={{
     display: 'flex',
     flexDirection: 'row',
-    gap: '20px',
+    gap: '10px',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
+    position: 'relative',
   }}
 >
 {/* Bagian Produk */}
@@ -575,7 +619,7 @@ const ProductGrid = () => {
               {product.namabarang}
             </Typography>
             <Typography color="textSecondary">
-              Rp {product.harga.toLocaleString()}
+            Rp {parseFloat(product.harga).toLocaleString("id-ID", { maximumFractionDigits: 0 })}
             </Typography>
             <Typography color="textSecondary">
               Kategori: {product.Kategori.namakategori}
@@ -712,7 +756,16 @@ const ProductGrid = () => {
   <DialogTitle>Pilih Metode Pembayaran</DialogTitle>
   <DialogContent>
     <FormControl fullWidth>
-      <InputLabel id="payment-method-label">Metode Pembayaran</InputLabel>
+    {selectedPaymentMethod && (
+   <TextField
+     fullWidth
+     margin="normal"
+     label="Nama Pemesan"
+     value={customerName}
+     onChange={(e) => setCustomerName(e.target.value)}
+   />
+)}    
+<InputLabel id="payment-method-label">Metode Pembayaran</InputLabel>
       <Select
         labelId="payment-method-label"
         value={selectedPaymentMethod}
@@ -724,14 +777,20 @@ const ProductGrid = () => {
       </Select>
     </FormControl>
     {selectedPaymentMethod === "cash" && (
-      <TextField
-        fullWidth
-        margin="normal"
-        label="Uang Customer"
-        type="number"
-        value={customerCash}
-        onChange={(e) => setCustomerCash(e.target.value)}
-      />
+       <TextField
+              fullWidth
+              margin="normal"
+              label="Uang Customer"
+              type="number"
+              value={formatRupiah(customerCash)}
+              onChange={(e) => {
+                const rawValue = e.target.value.replace(/\./g, "");
+                if (!isNaN(rawValue)) {
+                  setCustomerCash(rawValue);
+                }
+              }}
+            />
+      
     )}
   </DialogContent>
   <DialogActions>

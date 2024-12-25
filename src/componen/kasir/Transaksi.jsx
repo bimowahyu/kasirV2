@@ -184,14 +184,14 @@ export const Transaksi = () => {
               <p><strong>Cabang:</strong> ${namacabang}</p>
               <p><strong>Tanggal Rekap:</strong> ${format(new Date(tanggal), 'dd/MM/yyyy')}</p>
               <div class="line"></div>
-              <p><strong>Total Penjualan Success:</strong> ${rekapData.totalPenjualanSuccess}</p>
-              <p><strong>Total Penjualan Pending:</strong> ${rekapData.totalPenjualanPending}</p>
+              <p><strong>Total Penjualan Success:</strong>Rp.${parseFloat(rekapData.totalPenjualanSuccess).toLocaleString()}</p>
+              <p><strong>Total Penjualan Pending:</strong>Rp.${parseFloat(rekapData.totalPenjualanPending).toLocaleString()}</p>
               <div class="line"></div>
               <p><strong>Penjualan Detail:</strong></p>
-              <p>- Cash Success: ${rekapData.totalPenjualanCashSuccess}</p>
-              <p>- QRIS Success: ${rekapData.totalPenjualanQrisSuccess}</p>
-              <p>- Cash Pending: ${rekapData.totalPenjualanCashPending}</p>
-              <p>- QRIS Pending: ${rekapData.totalPenjualanQrisPending}</p>
+              <p>- Cash Success:Rp.${parseFloat(rekapData.totalPenjualanCashSuccess).toLocaleString()}</p>
+              <p>- QRIS Success:Rp.${parseFloat(rekapData.totalPenjualanQrisSuccess).toLocaleString()}</p>
+              <p>- Cash Pending:Rp.${parseFloat(rekapData.totalPenjualanCashPending).toLocaleString()}</p>
+              <p>- QRIS Pending:Rp.${parseFloat(rekapData.totalPenjualanQrisPending).toLocaleString()}</p>
               <div class="line"></div>
               <p class="footer">*Terima kasih atas kerja keras Anda!*</p>
             </div>

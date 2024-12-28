@@ -29,7 +29,7 @@ export const Login = createAsyncThunk("user/login", async (user, thunkAPI) => {
                 'Content-Type': 'application/x-www-form-urlencoded',
             }
         });
-        console.log("Login response:", response.data);
+     //   console.log("Login response:", response.data);
         return response.data;
     } catch (error) {
         if (error.response) {
@@ -69,13 +69,14 @@ await axios.delete(`${getApiBaseUrl()}/logout`);
             state.isLoading = true;
         });
         builder.addCase(Login.fulfilled, (state, action) => {
+          //  console.log('Data login:', action.payload);
             state.isLoading = false;
             state.isSuccess = true;
             state.user = action.payload;
             state.isAuthenticated = true;
         });
         builder.addCase(Login.rejected, (state, action) => {
-            console.log("Rejected action payload:", action.payload);
+          //  console.log("Rejected action payload:", action.payload);
             state.isLoading = false;
             state.isError = true;
             state.message = action.payload;
@@ -85,7 +86,7 @@ await axios.delete(`${getApiBaseUrl()}/logout`);
             state.isLoading = true;
         });
         builder.addCase(Me.fulfilled, (state, action) => {
-            //console.log('Data pengguna dari API /me:', action.payload);
+           // console.log('Data pengguna dari API /me:', action.payload);
             state.isLoading = false;
             state.isSuccess = true;
             state.user = action.payload;

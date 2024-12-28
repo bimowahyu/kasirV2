@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import useSWR, { mutate } from "swr";
+import { useSelector } from "react-redux";
 import {
   Box,
   Button,
@@ -27,7 +28,10 @@ const getApiBaseUrl = () => {
 const fetcher = (url) => axios.get(url).then((res) => res.data.data);
 
 function UserList() {
-  const { data: users, error: userError } = useSWR(`${getApiBaseUrl()}/getuser`, fetcher);
+  const { user } = useSelector((state) => state.auth);
+  const endpoint = user?.role === "superadmin" ? "/getuser" : "/getusercabang";
+  const { data: users, error: userError } = useSWR(user ? `${getApiBaseUrl()}${endpoint}` : null, fetcher);  
+  // const { data: users, error: userError } = useSWR(`${getApiBaseUrl()}/getuser`, fetcher);
   const { data: cabangList, error: cabangError } = useSWR(`${getApiBaseUrl()}/cabang`, fetcher);
 
   const [openModal, setOpenModal] = useState(false);

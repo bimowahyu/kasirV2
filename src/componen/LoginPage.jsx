@@ -67,15 +67,14 @@ export const LoginPage = () => {
         showConfirmButton: false,
         timer: 2000,
       });
-
-      // Use the correct path to role based on backend response
       const userRole = userData.role;
-      console.log("User Role:", userRole); // Debug log
+      console.log("User Role:", userRole); 
 
       if (userRole === "admin" || userRole === "superadmin") {
         navigate("/Dashboard");
       } else if (userRole === "kasir") {
-        navigate("/order");
+        //navigate("/order");
+        navigate("/produkpercabang")
       }
     } else if (isError && message) {
       Swal.fire({

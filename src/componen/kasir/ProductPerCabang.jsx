@@ -34,7 +34,7 @@ import axios from 'axios';
 import Swal from "sweetalert2";
 import { useDispatch, useSelector } from 'react-redux';
 import { Me } from '../../fitur/AuthSlice';
-import { replace } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const getApiBaseUrl = () => {
   const protocol = window.location.protocol === "https:" ? "https" : "http";
@@ -57,6 +57,7 @@ const ProductPerCabang = () => {
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
    const [customerName, setCustomerName] = useState("");
@@ -99,11 +100,12 @@ const ProductPerCabang = () => {
       } catch (err) {
         console.error("Gagal mendapatkan nama cabang:", err);
         setBranchName("Nama Toko Tidak Diketahui");
+        navigate('/');  
       }
     };
-  
+    
     fetchBranchName();
-  }, []);
+  }, [navigate]);
   const formatCurrency = (value) => {
     if (typeof value === "string") value = parseFloat(value);
     return typeof value === "number" && !isNaN(value)
@@ -190,18 +192,83 @@ const ProductPerCabang = () => {
           quantity: order.quantity,
         })),
       });
-      console.log(change)
+      //console.log(change)
       setPaymentDialogOpen(false); 
       setReceiptDialogOpen(true); 
       setOrders([]); 
     } catch (error) {
-      console.error("Error processing cash payment:", error);
+      //console.error("Error processing cash payment:", error);
       Swal.fire("Terjadi kesalahan", "Gagal menyimpan transaksi", "error");
     }
   };
   const renderQRCode = (qrString) => {
     return `<div id="qrcode-container" style="background: white; padding: 16px; border-radius: 8px; display: inline-block;"></div>`;
   };
+  //-----------------------TRANSAKSI MIDTRANS BANYAK OPSI--------------------------
+  // const processQrisPayment = async (total) => {
+  //   try {
+  //     const response = await axios.post(
+  //       `${getApiBaseUrl()}/createtransaksicabang`,
+  //       {
+  //         pembayaran: "qris",
+  //         items: orders.map((order) => ({
+  //           baranguuid: order.id,
+  //           jumlahbarang: order.quantity,
+  //         })),
+  //       },
+  //       { withCredentials: true }
+  //     );
+  
+  //     const { qris_url, transaksi } = response.data?.data || {};
+  //     const orderId = transaksi?.order_id;
+  
+  //     // Validasi respons
+  //     if (!qris_url || !orderId) {
+  //       Swal.fire("Terjadi kesalahan", "Data pembayaran QRIS tidak tersedia", "error");
+  //       return;
+  //     }
+  
+  //     // Tampilkan modal dengan iframe Midtrans
+  //     Swal.fire({
+  //       title: "Pembayaran QRIS",
+  //       html: `
+  //         <div class="text-center">
+  //           <p style="font-size: 16px; margin: 10px 0;">
+  //             <strong>Total Pembayaran:</strong> Rp ${total.toLocaleString()}
+  //           </p>
+  //           <p style="font-size: 14px; color: #666; margin: 10px 0;">
+  //             Order ID: ${orderId}
+  //           </p>
+  //           <iframe 
+  //             src="${qris_url}"
+  //             frameborder="0"
+  //             width="100%"
+  //             height="550px"
+  //           ></iframe>
+  //         </div>
+  //       `,
+  //       showConfirmButton: true,
+  //       confirmButtonText: "Tutup",
+  //       width: 800, // Tambah lebar modal untuk iframe
+  //       showCloseButton: true,
+  //       allowOutsideClick: false, // Prevent clicking outside
+  //       didOpen: () => {
+  //         // Optional: tambahkan event listener untuk pesan dari iframe jika diperlukan
+  //         window.addEventListener('message', (event) => {
+  //           if (event.data === 'success') {
+  //             Swal.close();
+  //             // Handle sukses pembayaran
+  //           }
+  //         });
+  //       }
+  //     });
+  
+  //   } catch (error) {
+  //     console.error("Error processing QRIS payment:", error);
+  //     Swal.fire("Terjadi kesalahan", "Gagal memproses pembayaran QRIS", "error");
+  //   }
+  // };
+  //-----------------TRANSAKSI KSHUS QRIS(COREAPI)------------------------//
   const processQrisPayment = async (total) => {
     try {
       const response = await axios.post(`${getApiBaseUrl()}/createtransaksicabang`, {
@@ -375,7 +442,6 @@ const ProductPerCabang = () => {
   
   
   const filteredProducts = products.filter((product) => {
-    // Memastikan Barang dan Kategori ada sebelum melakukan filter
     const matchesCategory =
       !selectedCategory || product?.Barang?.Kategori?.namakategori === selectedCategory;
     const matchesSearch =
@@ -383,7 +449,7 @@ const ProductPerCabang = () => {
       product?.Barang?.namabarang?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
-  console.log(products);
+ // console.log(products);
 
   
 
@@ -485,7 +551,7 @@ const ProductPerCabang = () => {
         </head>
         <body>
           <div class="header">
-            <p class="store-name">${branchName || user?.cabang?.namacabang || "Cabang Tidak Diketahui"}</p>
+           <p class="store-name">${user?.cabang?.namacabang || "Cabang Tidak Diketahui"}</p>
             <p class="customer-name">Pemesan: ${customerName || "Tidak Diketahui"}</p>
             <p class="date">${formatDate(new Date())}</p>
           </div>
@@ -564,16 +630,17 @@ const formatRupiah = (value) =>{
   <FormControl fullWidth>
     <InputLabel id="category-filter-label">Filter Kategori</InputLabel>
     <Select
-        onChange={(e) => setSelectedCategory(e.target.value)}
+        labelId="category-filter-label"
         value={selectedCategory}
-      >
-        <option value="">Semua Kategori</option>
+        onChange={(e) => setSelectedCategory(e.target.value)}
+    >
+        <MenuItem value="">Semua Kategori</MenuItem>
         {categories.map((category) => (
-          <option key={category.uuid} value={category.namakategori}>
-            {category.namakategori}
-          </option>
+            <MenuItem key={category.uuid} value={category.namakategori}>
+                {category.namakategori}
+            </MenuItem>
         ))}
-      </Select>
+    </Select>
     <Box sx={{ position: 'relative'}}>
           {showSearch ? (
             <Box

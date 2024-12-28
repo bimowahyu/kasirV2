@@ -189,7 +189,7 @@ export const Transaksi = () => {
               <div class="line"></div>
               <p><strong>Penjualan Detail:</strong></p>
               <p>- Cash Success:Rp.${parseFloat(rekapData.totalPenjualanCashSuccess).toLocaleString()}</p>
-              <p>- QRIS Success:Rp.${parseFloat(rekapData.totalPenjualanQrisSuccess).toLocaleString()}</p>
+              <p>- QRIS Success:Rp. ${parseFloat(rekapData.totalPenjualanQrisSuccess).toLocaleString()}</p>
               <p>- Cash Pending:Rp.${parseFloat(rekapData.totalPenjualanCashPending).toLocaleString()}</p>
               <p>- QRIS Pending:Rp.${parseFloat(rekapData.totalPenjualanQrisPending).toLocaleString()}</p>
               <div class="line"></div>
@@ -245,54 +245,57 @@ export const Transaksi = () => {
       <Card>
         <CardHeader title="Rekap Harian" />
         <Divider />
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Order ID</TableCell>
-              <TableCell>Total Jual</TableCell>
-              <TableCell>Status Pembayaran</TableCell>
-              <TableCell>Pembayaran</TableCell>
-              <TableCell>Tanggal</TableCell>
-              <TableCell>Dibuat</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rekapError ? (
-              <TableRow>
-                <TableCell colSpan={5} align="center">
-                  <Typography color="error">Gagal memuat data rekap harian.</Typography>
-                </TableCell>
-              </TableRow>
-            ) : isValidating || !rekapData ? (
-              <TableRow>
-                <TableCell colSpan={5} align="center">
-                  <CircularProgress size={24} />
-                </TableCell>
-              </TableRow>
-            ) : (
-              rekapData?.data?.transaksiSuccess.map((transaction) => (
-                <TableRow
-                  key={transaction.uuid}
-                  hover
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => handleRowClick(transaction)}
-                >
-                  <TableCell>{transaction.order_id}</TableCell>
-                  <TableCell>{transaction.totaljual}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={statusMap[transaction.status_pembayaran]?.label || 'Unknown'}
-                      color={statusMap[transaction.status_pembayaran]?.color || 'default'}
-                    />
-                  </TableCell>
-                  <TableCell>{transaction.pembayaran}</TableCell>
-                  <TableCell>{format(new Date(transaction.tanggal), 'dd/MM/yyyy')}</TableCell>
-                  <TableCell>{format(new Date(transaction.createdAt), 'HH:mm:ss')}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <Box sx={{ overflowX: 'auto', width: '100%' }}>
+  <Table>
+    <TableHead>
+      <TableRow>
+        <TableCell>Order ID</TableCell>
+        <TableCell>Total Jual</TableCell>
+        <TableCell>Status Pembayaran</TableCell>
+        <TableCell>Pembayaran</TableCell>
+        <TableCell>Tanggal</TableCell>
+        <TableCell>Dibuat</TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {rekapError ? (
+        <TableRow>
+          <TableCell colSpan={6} align="center">
+            <Typography color="error">Gagal memuat data rekap harian.</Typography>
+          </TableCell>
+        </TableRow>
+      ) : isValidating || !rekapData ? (
+        <TableRow>
+          <TableCell colSpan={6} align="center">
+            <CircularProgress size={24} />
+          </TableCell>
+        </TableRow>
+      ) : (
+        rekapData?.data?.transaksiSuccess.map((transaction) => (
+          <TableRow
+            key={transaction.uuid}
+            hover
+            style={{ cursor: 'pointer' }}
+            onClick={() => handleRowClick(transaction)}
+          >
+            <TableCell>{transaction.order_id}</TableCell>
+            <TableCell>{transaction.totaljual}</TableCell>
+            <TableCell>
+              <Chip
+                label={statusMap[transaction.status_pembayaran]?.label || 'Unknown'}
+                color={statusMap[transaction.status_pembayaran]?.color || 'default'}
+              />
+            </TableCell>
+            <TableCell>{transaction.pembayaran}</TableCell>
+            <TableCell>{format(new Date(transaction.tanggal), 'dd/MM/yyyy')}</TableCell>
+            <TableCell>{format(new Date(transaction.createdAt), 'HH:mm:ss')}</TableCell>
+          </TableRow>
+        ))
+      )}
+    </TableBody>
+  </Table>
+</Box>
+
       </Card>
 
       {selectedTransaction && (

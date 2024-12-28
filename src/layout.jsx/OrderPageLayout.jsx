@@ -1,9 +1,8 @@
 import React from 'react';
 import { Grid, Grid2, useMediaQuery } from '@mui/material';
 import Header from '../componen/kasir/Header';
-//import Sidebar from '../componen/kasir/Sidebar';
 import ProductGrid from '../componen/kasir/ProductGrid';
-//import OrderList from '../componen/kasir/OrderList';
+
 
 const OrderPageLayout = () => {
   const isMobile = useMediaQuery('(max-width:768px)'); 

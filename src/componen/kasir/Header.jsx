@@ -52,8 +52,8 @@ const Header = () => {
         <List style={{ width: 250 }}>
           <ListItem button
           component={NavLink}
-          //onClick={logout}
-          to="/order"
+         // to="/order"
+         to={"/produkpercabang"}
           >
             <ListItemText primary="Beranda" />
           </ListItem>
@@ -62,6 +62,7 @@ const Header = () => {
             button
             component={NavLink}
             to="/transaksikasir"
+           
           >
             <ListItemText primary="Transaksi" />
             

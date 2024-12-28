@@ -316,6 +316,62 @@ const ProductGrid = () => {
   const renderQRCode = (qrString) => {
     return `<div id="qrcode-container" style="background: white; padding: 16px; border-radius: 8px; display: inline-block;"></div>`;
   };
+  //----------------------TRANSAKSI BANYAK OPSI-----------------------
+  // const processQrisPayment = async (total) => {
+  //   try {
+  //     const response = await axios.post(
+  //       `${getApiBaseUrl()}/createtransaksi`,
+  //       {
+  //         pembayaran: "qris",
+  //         items: orders.map((order) => ({
+  //           baranguuid: order.id,
+  //           jumlahbarang: order.quantity,
+  //         })),
+  //       },
+  //       { withCredentials: true }
+  //     );
+  
+  //     const { qris_url, transaksi } = response.data?.data || {};
+  //     const orderId = transaksi?.order_id;
+  
+  //     // Validasi respons
+  //     if (!qris_url || !orderId) {
+  //       Swal.fire("Terjadi kesalahan", "Data pembayaran QRIS tidak tersedia", "error");
+  //       return;
+  //     }
+  
+  //     // Tampilkan modal dengan QR code
+  //     Swal.fire({
+  //       title: "Pembayaran QRIS",
+  //       html: `
+  //         <div class="text-center">
+  //           <p style="font-size: 16px; margin: 10px 0;">
+  //             <strong>Total Pembayaran:</strong> Rp ${total.toLocaleString()}
+  //           </p>
+  //           <p style="font-size: 14px; color: #666; margin: 10px 0;">
+  //             Order ID: ${orderId}
+  //           </p>
+  //           <iframe 
+  //             src="${qris_url}"
+  //             frameborder="0"
+  //             width="100%"
+  //             height="550px"
+  //           ></iframe>
+  //         </div>
+  //       `,
+  //       showConfirmButton: true,
+  //       confirmButtonText: "Tutup",
+  //       width: 600,
+  //       showCloseButton: true
+  //     });
+  
+  //   } catch (error) {
+  //     console.error("Error processing QRIS payment:", error);
+  //     Swal.fire("Terjadi kesalahan", "Gagal memproses pembayaran QRIS", "error");
+  //   }
+  // };
+  
+//----------------------KHUSUS QRIS-------------------  
   const processQrisPayment = async (total) => {
     try {
       const response = await axios.post(`${getApiBaseUrl()}/createtransaksi`, {

@@ -627,8 +627,8 @@ const OrdersList = () => (
     <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
       Order List
     </Typography>
-
-    <List sx={{ flex: 1, overflow: 'auto' }}>
+    <div style={{ maxHeight: '300px', overflowY: 'auto', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}>
+    <List>
       {orders.map((order) => (
         <ListItem
           key={order.id}
@@ -679,7 +679,7 @@ const OrdersList = () => (
         </ListItem>
       ))}
     </List>
-
+</div>
     <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #eee' }}>
       <Typography variant="h6" sx={{ mb: 2, textAlign: 'right' }}>
         Total: Rp {orders.reduce((sum, order) => sum + order.price * order.quantity, 0).toLocaleString()}
@@ -724,9 +724,14 @@ const OrdersList = () => (
   }}
 >
 
-<Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+<Box sx={{ 
+      height: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden' // Prevent outer scrolling
+    }}>
       {isMobile && (
-        <AppBar position="fixed" color="default" elevation={1}>
+        <AppBar position="static" color="default" elevation={1}>
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               POS System
@@ -741,157 +746,183 @@ const OrdersList = () => (
       )}
 
       <Box sx={{ 
-        display: 'flex', 
         flex: 1,
-        gap: 2, 
-        p: 2,
-        pt: isMobile ? 8 : 2,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden', // Container shouldn't scroll
         bgcolor: '#f5f5f5',
-        height: '100%',
-        overflow: 'hidden'
+        p: 2,
       }}>
-        {/* Products Section */}
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, overflow: 'hidden' }}>
-          {/* Filters */}
+        {/* Main Content Area */}
+        <Box sx={{ 
+          display: 'flex',
+          gap: 2,
+          height: '100%', // Take full height
+        }}>
+          {/* Products Section */}
           <Box sx={{ 
-            display: 'flex', 
-            gap: 2,
-            backgroundColor: 'white',
-            p: 2,
-            borderRadius: 1,
-            boxShadow: 1,
-            flexDirection: isMobile ? 'column' : 'row'
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0, // Important for nested flex scrolling
           }}>
-            <FormControl fullWidth={isMobile}>
-              <Select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                displayEmpty
-                size="small"
-                sx={{ bgcolor: 'white' }}
-              >
-                <MenuItem value="">All Categories</MenuItem>
-                {categories.map((category) => (
-                  <MenuItem key={category.uuid} value={category.namakategori}>
-                    {category.namakategori}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
+            {/* Filters */}
             <Box sx={{ 
-              position: 'relative', 
-              display: 'flex', 
-              alignItems: 'center',
-              width: isMobile ? '100%' : 'auto'
+              backgroundColor: 'white',
+              p: 2,
+              borderRadius: 1,
+              boxShadow: 1,
+              mb: 2
             }}>
-              {showSearch ? (
-                <Box sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  bgcolor: 'white',
-                  borderRadius: 1,
-                  border: '1px solid #ddd',
-                  px: 1,
-                  width: '100%'
-                }}>
-                  <InputBase
-                    placeholder="Search products"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    sx={{ flex: 1 }}
-                  />
-                  <IconButton size="small" onClick={() => setShowSearch(false)}>
-                    <CloseIcon />
-                  </IconButton>
-                </Box>
-              ) : (
-                <IconButton
-                  onClick={() => setShowSearch(true)}
-                  sx={{ 
-                    bgcolor: 'white', 
-                    border: '1px solid #ddd',
-                    width: isMobile ? '100%' : 'auto'
-                  }}
+              <FormControl fullWidth sx={{ mb: isMobile ? 1 : 0 }}>
+                <Select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  displayEmpty
+                  size="small"
                 >
-                  <SearchIcon />
-                </IconButton>
-              )}
+                  <MenuItem value="">All Categories</MenuItem>
+                  {categories.map((category) => (
+                    <MenuItem key={category.uuid} value={category.namakategori}>
+                      {category.namakategori}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <Box sx={{ 
+                mt: isMobile ? 1 : 0,
+                width: '100%',
+                display: 'flex' 
+              }}>
+                {showSearch ? (
+                  <Box sx={{
+                    display: 'flex',
+                    flex: 1,
+                    alignItems: 'center',
+                    bgcolor: 'white',
+                    border: '1px solid #ddd',
+                    borderRadius: 1,
+                    px: 1
+                  }}>
+                    <InputBase
+                      placeholder="Search products"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      sx={{ flex: 1 }}
+                    />
+                    <IconButton size="small" onClick={() => setShowSearch(false)}>
+                      <CloseIcon />
+                    </IconButton>
+                  </Box>
+                ) : (
+                  <IconButton
+                    onClick={() => setShowSearch(true)}
+                    sx={{ 
+                      width: '100%',
+                      bgcolor: 'white',
+                      border: '1px solid #ddd'
+                    }}
+                  >
+                    <SearchIcon />
+                  </IconButton>
+                )}
+              </Box>
+            </Box>
+
+            {/* Products Grid with Scroll */}
+            <Box sx={{ 
+      width: '100%',
+      height: '100%',
+      overflowY: 'auto',
+      px: { xs: 1, sm: 2 } // Adjust padding for different screen sizes
+    }}>
+      <Grid 
+        container 
+        spacing={{ xs: 1, sm: 2 }} // Reduce spacing on mobile
+        sx={{
+          width: '100%',
+          margin: 0,
+          // Ensure proper grid container behavior
+          '& > .MuiGrid-item': {
+            paddingTop: { xs: '8px', sm: '16px' },
+            width: '100%'
+          }
+        }}
+      >
+                {filteredProducts.map((product) => (
+                  <Grid item xs={12} sm={6} md={4} key={product.uuid}>
+                    <Card sx={{ 
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      bgcolor: 'white',
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      boxShadow: 2
+                    }}>
+                      <CardMedia
+                        component="img"
+                        image={`${getApiBaseUrl()}/uploads/${product?.Barang?.foto || product?.foto}`}
+                        alt={product?.Barang?.namabarang || product?.namabarang}
+                         sx={{ 
+                  height: { xs: 120, sm: 140 }, // Slightly smaller image height on mobile
+                  objectFit: 'cover'
+                }}
+                      />
+                      <CardContent sx={{ flexGrow: 1, p: 2 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                          {product?.Barang?.namabarang}
+                        </Typography>
+                        <Typography color="primary" sx={{ fontWeight: 'bold', mb: 1 }}>
+                          Rp {parseFloat(product?.Barang?.harga).toLocaleString("id-ID")}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {product?.Barang?.Kategori?.namakategori}
+                        </Typography>
+                      </CardContent>
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        sx={{ 
+                          borderRadius: 0,
+                          py: 1.5,
+                          bgcolor: 'primary.main',
+                          '&:hover': { bgcolor: 'primary.dark' }
+                        }}
+                        onClick={() => addToOrder(product)}
+                      >
+                        Add to Order
+                      </Button>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
             </Box>
           </Box>
 
-          {/* Products Grid */}
-          <Box sx={{ overflow: 'auto', flex: 1 }}>
-            <Grid container spacing={2}>
-              {filteredProducts.map((product) => (
-                <Grid item xs={12} sm={6} md={4} key={product.uuid}>
-                  <Card sx={{ 
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    bgcolor: 'white',
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                    boxShadow: 2
-                  }}>
-                    <CardMedia
-                      component="img"
-                      image={`${getApiBaseUrl()}/uploads/${product?.Barang?.foto || product?.foto}`}
-                      alt={product?.Barang?.namabarang || product?.namabarang}
-                      sx={{ height: 140, objectFit: 'cover' }}
-                    />
-                    <CardContent sx={{ flexGrow: 1, p: 2 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-                        {product?.Barang?.namabarang}
-                      </Typography>
-                      <Typography color="primary" sx={{ fontWeight: 'bold', mb: 1 }}>
-                        Rp {parseFloat(product?.Barang?.harga).toLocaleString("id-ID")}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {product?.Barang?.Kategori?.namakategori}
-                      </Typography>
-                    </CardContent>
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      sx={{ 
-                        borderRadius: 0,
-                        py: 1.5,
-                        bgcolor: 'primary.main',
-                        '&:hover': { bgcolor: 'primary.dark' }
-                      }}
-                      onClick={() => addToOrder(product)}
-                    >
-                      Add to Order
-                    </Button>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
+          {/* Order List Section */}
+          {!isMobile ? (
+            <Box sx={{ width: 350 }}>
+              <OrdersList />
+            </Box>
+          ) : (
+            <Drawer
+              anchor="right"
+              open={mobileCartOpen}
+              onClose={() => setMobileCartOpen(false)}
+              sx={{
+                '& .MuiDrawer-paper': {
+                  width: '100%',
+                  maxWidth: 350,
+                  boxSizing: 'border-box',
+                },
+              }}
+            >
+              <OrdersList />
+            </Drawer>
+          )}
         </Box>
-
-        {/* Order List Section */}
-        {!isMobile ? (
-          <Box sx={{ width: 350 }}>
-            <OrdersList />
-          </Box>
-        ) : (
-          <Drawer
-            anchor="right"
-            open={mobileCartOpen}
-            onClose={() => setMobileCartOpen(false)}
-            sx={{
-              '& .MuiDrawer-paper': {
-                width: '100%',
-                maxWidth: 350,
-                boxSizing: 'border-box',
-              },
-            }}
-          >
-            <OrdersList />
-          </Drawer>
-        )}
       </Box>
     </Box>
       </div>

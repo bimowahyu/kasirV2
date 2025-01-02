@@ -24,12 +24,19 @@ import {
   DialogContent, 
   DialogActions,
   TextField,
+  useTheme,
+  useMediaQuery,
   IconButton,
   InputBase,
-  Divider
+  Divider,
+  Drawer,
+  AppBar,
+  Toolbar,
+  Badge,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import axios from 'axios';
 import Swal from "sweetalert2";
 import { useDispatch, useSelector } from 'react-redux';
@@ -61,6 +68,9 @@ const ProductPerCabang = () => {
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
    const [customerName, setCustomerName] = useState("");
+   const theme = useTheme();
+   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+   const [mobileCartOpen, setMobileCartOpen] = useState(false);
   //console.log("User State:", user); 
   const formatDate = (date) => {
     return new Intl.DateTimeFormat("id-ID", {
@@ -81,7 +91,7 @@ const ProductPerCabang = () => {
           axios.get(`${getApiBaseUrl()}/barangcabang`, { withCredentials: true }),
           axios.get(`${getApiBaseUrl()}/kategori`, { withCredentials: true })
         ]);
-        setProducts(productResponse.data.data); // Data produk
+        setProducts(productResponse.data.data);
         setCategories(categoryResponse.data.data); 
       } catch (err) {
         setError(true);
@@ -604,6 +614,94 @@ const formatRupiah = (value) =>{
   .toString()
  .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
+const OrdersList = () => (
+  <Box sx={{ 
+    display: 'flex',
+    flexDirection: 'column',
+    height: isMobile ? '100%' : 'auto',
+    bgcolor: 'white',
+    borderRadius: isMobile ? 0 : 2,
+    p: 2,
+    boxShadow: 2
+  }}>
+    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
+      Order List
+    </Typography>
+
+    <List sx={{ flex: 1, overflow: 'auto' }}>
+      {orders.map((order) => (
+        <ListItem
+          key={order.id}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'stretch',
+            gap: 1,
+            py: 2,
+            borderBottom: '1px solid #eee'
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography variant="subtitle2">{order.name}</Typography>
+            <Button
+              color="error"
+              size="small"
+              onClick={() => removeOrder(order.id)}
+            >
+              Remove
+            </Button>
+          </Box>
+          
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              Rp {(order.price * order.quantity).toLocaleString()}
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => decrementOrder(order.id)}
+                sx={{ minWidth: '32px', p: 0 }}
+              >
+                -
+              </Button>
+              <Typography>{order.quantity}</Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => incrementOrder(order.id)}
+                sx={{ minWidth: '32px', p: 0 }}
+              >
+                +
+              </Button>
+            </Box>
+          </Box>
+        </ListItem>
+      ))}
+    </List>
+
+    <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #eee' }}>
+      <Typography variant="h6" sx={{ mb: 2, textAlign: 'right' }}>
+        Total: Rp {orders.reduce((sum, order) => sum + order.price * order.quantity, 0).toLocaleString()}
+      </Typography>
+      <Button
+        variant="contained"
+        fullWidth
+        onClick={() => {
+          setPaymentDialogOpen(true);
+          if (isMobile) setMobileCartOpen(false);
+        }}
+        sx={{ 
+          py: 1.5,
+          bgcolor: 'secondary.main',
+          '&:hover': { bgcolor: 'secondary.dark' }
+        }}
+      >
+        Pay
+      </Button>
+    </Box>
+  </Box>
+);
   return (
 <div
   style={{
@@ -626,218 +724,177 @@ const formatRupiah = (value) =>{
   }}
 >
 
-  {/* Filter Kategori */}
-  <FormControl fullWidth>
-    <InputLabel id="category-filter-label">Filter Kategori</InputLabel>
-    <Select
-        labelId="category-filter-label"
-        value={selectedCategory}
-        onChange={(e) => setSelectedCategory(e.target.value)}
-    >
-        <MenuItem value="">Semua Kategori</MenuItem>
-        {categories.map((category) => (
-            <MenuItem key={category.uuid} value={category.namakategori}>
-                {category.namakategori}
-            </MenuItem>
-        ))}
-    </Select>
-    <Box sx={{ position: 'relative'}}>
-          {showSearch ? (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                backgroundColor: '#f1f1f1',
-               
-                
-              }}
-            >
-              <InputBase
-                placeholder="Cari produk"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                sx={{ flex: 1 }}
-              />
-              <IconButton onClick={() => setShowSearch(false)}>
-                <CloseIcon />
+<Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      {isMobile && (
+        <AppBar position="fixed" color="default" elevation={1}>
+          <Toolbar>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              POS System
+            </Typography>
+            <Badge badgeContent={orders.length} color="secondary">
+              <IconButton onClick={() => setMobileCartOpen(true)}>
+                <ShoppingCartIcon />
               </IconButton>
+            </Badge>
+          </Toolbar>
+        </AppBar>
+      )}
+
+      <Box sx={{ 
+        display: 'flex', 
+        flex: 1,
+        gap: 2, 
+        p: 2,
+        pt: isMobile ? 8 : 2,
+        bgcolor: '#f5f5f5',
+        height: '100%',
+        overflow: 'hidden'
+      }}>
+        {/* Products Section */}
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, overflow: 'hidden' }}>
+          {/* Filters */}
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 2,
+            backgroundColor: 'white',
+            p: 2,
+            borderRadius: 1,
+            boxShadow: 1,
+            flexDirection: isMobile ? 'column' : 'row'
+          }}>
+            <FormControl fullWidth={isMobile}>
+              <Select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                displayEmpty
+                size="small"
+                sx={{ bgcolor: 'white' }}
+              >
+                <MenuItem value="">All Categories</MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category.uuid} value={category.namakategori}>
+                    {category.namakategori}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <Box sx={{ 
+              position: 'relative', 
+              display: 'flex', 
+              alignItems: 'center',
+              width: isMobile ? '100%' : 'auto'
+            }}>
+              {showSearch ? (
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  bgcolor: 'white',
+                  borderRadius: 1,
+                  border: '1px solid #ddd',
+                  px: 1,
+                  width: '100%'
+                }}>
+                  <InputBase
+                    placeholder="Search products"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    sx={{ flex: 1 }}
+                  />
+                  <IconButton size="small" onClick={() => setShowSearch(false)}>
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+              ) : (
+                <IconButton
+                  onClick={() => setShowSearch(true)}
+                  sx={{ 
+                    bgcolor: 'white', 
+                    border: '1px solid #ddd',
+                    width: isMobile ? '100%' : 'auto'
+                  }}
+                >
+                  <SearchIcon />
+                </IconButton>
+              )}
             </Box>
-          ) : (
-            <IconButton
-              onClick={() => setShowSearch(true)}
-              sx={{
-                backgroundColor: '#f1f1f1',
-              
-               
-              }}
-            >
-              <SearchIcon />
-            </IconButton>
-          )}
-        </Box>
-  </FormControl>
-
-  {/* Grid Produk */}
-  <Grid container spacing={2}>
-    {filteredProducts.map((product) => (
-      <Grid item xs={12} sm={6} md={4} lg={3} key={product.uuid}>
-        <Card
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            height: '100%', // Tinggi konsisten untuk semua card
-            boxShadow: 3, // Tambahkan bayangan
-          }}
-        >
-         <CardMedia
-          component="img"
-          image={`${getApiBaseUrl()}/uploads/${product?.Barang?.foto || product?.foto}`}
-          alt={product?.Barang?.namabarang || product?.namabarang}
-          height="140"
-          sx={{ objectFit: 'cover' }}
-        />
-          <CardContent sx={{ flexGrow: 1, overflow: "hidden" }}>
-            <Typography
-              variant="h6"
-              sx={{
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {product?.Barang?.namabarang}
-            </Typography>
-            <Typography color="textSecondary">
-            Rp {parseFloat(product?.Barang?.harga).toLocaleString("id-ID", {maximumFractionDigits: 0})}
-            </Typography>
-            <Typography color="textSecondary">
-              Kategori: {product?.Barang?.Kategori?.namakategori}
-            </Typography>
-          </CardContent>
-          <Box sx={{ padding: "8px" }}>
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              onClick={() => addToOrder(product)}
-            >
-              Tambah
-            </Button>
           </Box>
-        </Card>
-      </Grid>
-    ))}
-  </Grid>
-</div>
 
-{/* Bagian Transaksi */}
-<div className="transaction-container">
-  {/* Judul Daftar Pesanan */}
-  <Typography variant="h6" gutterBottom>
-    Daftar Pesanan
-  </Typography>
-
-  {/* List Pesanan */}
-  <List>
-    {orders.map((order) => (
-      <ListItem
-        key={order.id}
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexDirection: { xs: "column", sm: "row" }, 
-          textAlign: { xs: "center", sm: "left" },
-          gap: 1,
-          padding: "8px 0", 
-        }}
-      >
-        {/* Nama Barang dan Harga */}
-        <Box
-          sx={{
-            flexGrow: 1,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap", 
-            minWidth: "0", 
-          }}
-        >
-          <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-          {order.name || "Nama tidak tersedia"}
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-          Rp {formatCurrency(order.price * order.quantity || 0)}
-          </Typography>
+          {/* Products Grid */}
+          <Box sx={{ overflow: 'auto', flex: 1 }}>
+            <Grid container spacing={2}>
+              {filteredProducts.map((product) => (
+                <Grid item xs={12} sm={6} md={4} key={product.uuid}>
+                  <Card sx={{ 
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    bgcolor: 'white',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: 2
+                  }}>
+                    <CardMedia
+                      component="img"
+                      image={`${getApiBaseUrl()}/uploads/${product?.Barang?.foto || product?.foto}`}
+                      alt={product?.Barang?.namabarang || product?.namabarang}
+                      sx={{ height: 140, objectFit: 'cover' }}
+                    />
+                    <CardContent sx={{ flexGrow: 1, p: 2 }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                        {product?.Barang?.namabarang}
+                      </Typography>
+                      <Typography color="primary" sx={{ fontWeight: 'bold', mb: 1 }}>
+                        Rp {parseFloat(product?.Barang?.harga).toLocaleString("id-ID")}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {product?.Barang?.Kategori?.namakategori}
+                      </Typography>
+                    </CardContent>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      sx={{ 
+                        borderRadius: 0,
+                        py: 1.5,
+                        bgcolor: 'primary.main',
+                        '&:hover': { bgcolor: 'primary.dark' }
+                      }}
+                      onClick={() => addToOrder(product)}
+                    >
+                      Add to Order
+                    </Button>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
         </Box>
 
-        {/* Tombol Kuantitas */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0, // Tombol tidak mengecil
-            gap: 1, // Spasi antar tombol
-            marginTop: { xs: 1, sm: 0 }, // Spasi tambahan di mobile
-          }}
-        >
-          <Button
-            size="small"
-            variant="outlined"
-            onClick={() => decrementOrder(order.id)}
+        {/* Order List Section */}
+        {!isMobile ? (
+          <Box sx={{ width: 350 }}>
+            <OrdersList />
+          </Box>
+        ) : (
+          <Drawer
+            anchor="right"
+            open={mobileCartOpen}
+            onClose={() => setMobileCartOpen(false)}
+            sx={{
+              '& .MuiDrawer-paper': {
+                width: '100%',
+                maxWidth: 350,
+                boxSizing: 'border-box',
+              },
+            }}
           >
-            -
-          </Button>
-          <Typography>{order.quantity}</Typography>
-          <Button
-            size="small"
-            variant="outlined"
-            onClick={() => incrementOrder(order.id)}
-          >
-            +
-          </Button>
-        </Box>
-
-        {/* Tombol Hapus */}
-        <Button
-          color="error"
-          onClick={() => removeOrder(order.id)}
-          sx={{
-            marginTop: { xs: 1, sm: 0 }, // Spasi di mobile
-            flexShrink: 0,
-          }}
-        >
-          Hapus
-        </Button>
-      </ListItem>
-    ))}
-  </List>
-
-  {/* Total dan Tombol Bayar */}
-  <Typography
-    variant="h6"
-    className="total-amount"
-    sx={{
-      textAlign: "right",
-      marginTop: 2,
-    }}
-  >
-    Total: Rp{" "}
-    {orders
-      .reduce((sum, order) => sum + order.price * order.quantity, 0)
-      .toLocaleString()}
-  </Typography>
-  <Button
-    variant="contained"
-    color="secondary"
-    onClick={() => setPaymentDialogOpen(true)}
-    fullWidth
-    sx={{ marginTop: 2 }}
-  >
-    Bayar
-  </Button>
-</div>
+            <OrdersList />
+          </Drawer>
+        )}
+      </Box>
+    </Box>
+      </div>
 
 
 {/* Dialog Pembayaran */}

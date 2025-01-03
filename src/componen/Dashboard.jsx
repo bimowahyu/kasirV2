@@ -35,6 +35,8 @@ export const Dashboard = () => {
   const [totalPenjualanSuccess, setTotalPenjualanSuccess] = useState(0);
   const [totalCabang, setTotalCabang] = useState(0);
   const [totalTransaksi, setTotalTransaksi] = useState(0);
+  const [todayPenjualanSuccess, setTodayPenjualanSuccess] = useState(0);
+
 
   // Fetch data transaksi menggunakan SWR
   const { data, error, req } = useSWR(`${getApiBaseUrl()}/gettransaksi`, fetcher);
@@ -56,7 +58,23 @@ export const Dashboard = () => {
     fetchCabangData();
     fetchLaporanDetail();
   }, []);
+  useEffect(() => {
+    if (data?.transaksi) {
+      const totalSuccess = data.transaksi.reduce((sum, trans) => 
+        sum + (trans.status_pembayaran === 'success' ? parseFloat(trans.totaljual) : 0), 0
+      );
+      const today = new Date();
+      const todayString = today.toISOString().split('T')[0];
 
+      const todaySuccess = data.transaksi.reduce((sum, trans) => {
+        const isToday = trans.tanggal === todayString;
+        return sum + (isToday ? parseFloat(trans.totaljual) : 0);
+      }, 0);
+
+      setTotalPenjualanSuccess(totalSuccess);
+      setTodayPenjualanSuccess(todaySuccess);
+    }
+  }, [data]);
   const fetchCabangData = async () => {
     try {
       const response = await axios.get(`${getApiBaseUrl()}/cabang`);
@@ -199,6 +217,21 @@ export const Dashboard = () => {
             </CardContent>
           </Card>
         </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography variant="subtitle1" color="textSecondary">
+                Today Transactions
+              </Typography>
+              <Typography variant="h4" sx={{ color: '#ff9800' }}>
+              Rp.{todayPenjualanSuccess.toLocaleString("id-ID")}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                Updated just now
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
 
       {/* Chart Section */}
@@ -242,6 +275,7 @@ export const Dashboard = () => {
             </CardContent>
           </Card>
         </Grid>
+        
         <Grid item xs={12} md={4}>
           <Card>
             <CardContent>

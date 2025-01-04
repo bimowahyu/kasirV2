@@ -44,7 +44,7 @@ export const Me = createAsyncThunk("user/me", async(__, thunkAPI) => {
     try {
         const response = await axios.get(`${getApiBaseUrl()}/me`,
     {withCredentials: true}
-    );
+    );console.log('Response /me:', response.data);
     return response.data;
     } catch (error) {
         if (error.response) {

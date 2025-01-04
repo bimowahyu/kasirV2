@@ -140,6 +140,7 @@ export const Sidebar = () => {
             }}
             >Set Produk
               </Typography>
+              {user && user.role === "superadmin" && (
             <Typography
             component={NavLink}
             to="/branch"
@@ -154,6 +155,8 @@ export const Sidebar = () => {
             >
             Branch
             </Typography>
+            )}
+
 
             <Typography
             component={NavLink}

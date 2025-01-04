@@ -5,7 +5,7 @@ import Header from '../componen/kasir/Header';
 import { Transaksi } from '../componen/kasir/Transaksi';
 //import OrderList from '../componen/kasir/OrderList';
 
-const TransactionsLayout = () => {
+const TransactionsLayout = ({ userUuid }) => {
   const isMobile = useMediaQuery('(max-width:768px)'); // Deteksi jika perangkat mobile (width <= 768px)
 
   return (
@@ -22,7 +22,7 @@ const TransactionsLayout = () => {
               <Sidebar />
             </Grid> */}
             <Grid item xs={12}>
-              <Transaksi />
+              <Transaksi userUuid={userUuid} />
             </Grid>
             {/* <Grid item xs={3}>
               <OrderList />
@@ -33,7 +33,7 @@ const TransactionsLayout = () => {
         {isMobile && (
           <>
             <Grid item xs={12}>
-              <Transaksi />
+              <Transaksi userUuid={userUuid} />
             </Grid>
             {/* <Grid item xs={12}>
               <Sidebar />

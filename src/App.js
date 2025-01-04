@@ -1,6 +1,6 @@
-import React from 'react';
+import React,{useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Provider } from 'react-redux';
+import { Provider,useDispatch  } from 'react-redux';
 import { store } from './app/store';
 import { LoginPage } from './componen/LoginPage';
 import { DashboardPages } from './pages/DashboardPages';
@@ -15,11 +15,17 @@ import { TransaksiKasirPages } from './pages/TransaksiKasirPages';
 import { BranchPages } from './pages/BranchPages';
 import { PrivateRoute } from './PrivateRoute';
 import { InvoicePages } from './pages/InvoicePages';
-import OrderBranch from './layout.jsx/OrderBranch';//view transaksi kasir
+import { ProdukPerCabangPages } from './pages/ProductPerCabangPages';//view transaksi kasir
 import SetProdukCabangPages from './pages/SetProdukCabangPages';
 import Product from './componen/kasir/transaksi/Produc';
+import { Me } from './fitur/AuthSlice';
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(Me());
+  }, [dispatch]);
   return (
     <Provider store={store}>
       <BrowserRouter>
@@ -48,7 +54,7 @@ function App() {
           />
            <Route path="/order" element={<OrderePages />} />
            {/* view transaksi kasir */}
-           <Route path="/produkpercabang" element={<OrderBranch />} /> 
+           <Route path="/produkpercabang" element={<ProdukPerCabangPages />} /> 
           {/* view transaksi kasir */}
            {/* view transaksi kasir */}
            <Route path="/produktransaksi" element={<Product />} /> 

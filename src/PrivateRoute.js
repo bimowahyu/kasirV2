@@ -10,6 +10,9 @@ export const PrivateRoute = ({ element, allowedRoles, ...rest }) => {
       if (allowedRoles && !allowedRoles.includes(user?.role)) {
         return <Navigate to="/transaksikasir" />;
       }
+      if (!user) {
+        return <div>Loading...</div>;
+      }
       return element;
  
 }

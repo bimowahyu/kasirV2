@@ -58,14 +58,13 @@ const Header = () => {
             <ListItemText primary="Beranda" />
           </ListItem>
          
-          <ListItem 
-            button
-            component={NavLink}
-            to="/transaksikasir"
+          <ListItem button
            
+           component={NavLink}
+           //onClick={logout}
+           to="/transaksikasir"
           >
             <ListItemText primary="Transaksi" />
-            
           </ListItem>
           <ListItem button
            

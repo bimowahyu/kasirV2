@@ -31,17 +31,27 @@ const fetcher = (url) => axios.get(url).then((res) => res.data.data);
 
 export const SetProdukCabang = () => {
   const { data: branchProducts, mutate: mutateBranchProducts } = useSWR(
-    `${getApiBaseUrl()}/barangcabangadmin`,
+    `${getApiBaseUrl()}/barangcabangbyrole`,
     fetcher
   );
-  const { data: branches } = useSWR(`${getApiBaseUrl()}/cabang`, fetcher);
+  const { data: branches } = useSWR(`${getApiBaseUrl()}/cabangbyrole`, fetcher);
   const { data: products } = useSWR(`${getApiBaseUrl()}/barang`, fetcher);
+  const { data: userInfo } = useSWR(`${getApiBaseUrl()}/me`, fetcher);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const isAdmin = userInfo?.role === 'admin';
+
+  // If user is admin, pre-select and lock their branch
+  React.useEffect(() => {
+    if (isAdmin && userInfo?.cabanguuid) {
+      setSelectedBranch(userInfo.cabanguuid);
+    }
+  }, [isAdmin, userInfo]);
 
   const handleAddProduct = async () => {
     try {
@@ -53,40 +63,24 @@ export const SetProdukCabang = () => {
       mutateBranchProducts();
       setModalOpen(false);
       setSelectedProduct("");
-      setSelectedBranch("");
+      if (!isAdmin) setSelectedBranch(""); // Only reset branch selection for superadmin
     } catch (error) {
       setError(error.response?.data?.message || "Gagal menambah produk.");
     }
   };
 
-  const handleDeleteProduct = async (baranguuid, cabanguuid) => {
-    try {
-      await axios.delete(`${getApiBaseUrl()}/deletebarangcabang`, {
-        data: { baranguuid, cabanguuid },
-      });
-      setSuccess("Produk berhasil dihapus dari cabang!");
-      mutateBranchProducts();
-    } catch (error) {
-      setError(error.response?.data?.message || "Gagal menghapus produk.");
-    }
-  };
   return (
-    <Box padding={{ xs: 2, sm: 3 }}>
-      <Typography 
-        variant="h4" 
-        marginBottom={2}
-        fontSize={{ xs: '1rem', sm: '1.125rem' }}
-      >
+    <Box padding={3}>
+      <Typography variant="h4" marginBottom={2}>
         Kelola Produk Per Cabang
       </Typography>
       
       <Card>
-        <Box padding={2} display="flex" justifyContent="space-between">
+        <Box padding={2}>
           <Button 
             variant="contained" 
             color="primary" 
             onClick={() => setModalOpen(true)}
-            fullWidth={false}
           >
             Tambah Produk ke Cabang
           </Button>
@@ -104,40 +98,22 @@ export const SetProdukCabang = () => {
       >
         <Box
           sx={{
-            position: 'relative',
-            width: { xs: '95%', sm: '400px' },
-            maxHeight: { xs: '80vh', sm: '90vh' },
-            overflow: 'auto',
+            width: '400px',
             bgcolor: 'background.paper',
             boxShadow: 24,
-            p: { xs: 2, sm: 4 },
+            p: 4,
             borderRadius: 2,
-            margin: { xs: '16px', sm: 'auto' },
-            '&:focus': {
-              outline: 'none'
-            }
           }}
         >
-          <Typography 
-            variant="h6" 
-            marginBottom={2}
-            fontSize={{ xs: '1.1rem', sm: '1.25rem' }}
-          >
+          <Typography variant="h6" marginBottom={2}>
             Tambah Produk ke Cabang
           </Typography>
 
-          <FormControl fullWidth margin="normal" size="small">
+          <FormControl fullWidth margin="normal">
             <InputLabel>Barang</InputLabel>
             <Select
               value={selectedProduct}
               onChange={(e) => setSelectedProduct(e.target.value)}
-              MenuProps={{
-                PaperProps: {
-                  style: {
-                    maxHeight: '40vh'
-                  }
-                }
-              }}
             >
               {products?.map((product) => (
                 <MenuItem key={product.uuid} value={product.uuid}>
@@ -147,18 +123,12 @@ export const SetProdukCabang = () => {
             </Select>
           </FormControl>
 
-          <FormControl fullWidth margin="normal" size="small">
+          <FormControl fullWidth margin="normal">
             <InputLabel>Cabang</InputLabel>
             <Select
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
-              MenuProps={{
-                PaperProps: {
-                  style: {
-                    maxHeight: '40vh'
-                  }
-                }
-              }}
+              disabled={isAdmin} // Disable for admin role
             >
               {branches?.map((branch) => (
                 <MenuItem key={branch.uuid} value={branch.uuid}>
@@ -168,12 +138,7 @@ export const SetProdukCabang = () => {
             </Select>
           </FormControl>
 
-          <Box 
-            marginTop={3} 
-            display="flex" 
-            justifyContent="space-between"
-            gap={2}
-          >
+          <Box marginTop={3} display="flex" gap={2}>
             <Button
               variant="outlined"
               onClick={() => setModalOpen(false)}
@@ -198,18 +163,16 @@ export const SetProdukCabang = () => {
         open={!!error}
         autoHideDuration={6000}
         onClose={() => setError("")}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert severity="error" sx={{ width: '100%' }}>{error}</Alert>
+        <Alert severity="error">{error}</Alert>
       </Snackbar>
       
       <Snackbar
         open={!!success}
         autoHideDuration={6000}
         onClose={() => setSuccess("")}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert severity="success" sx={{ width: '100%' }}>{success}</Alert>
+        <Alert severity="success">{success}</Alert>
       </Snackbar>
 
       <ListProdukPerCabang />

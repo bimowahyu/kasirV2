@@ -1,126 +1,105 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
 import OutlinedInput from '@mui/material/OutlinedInput';
-import Select from '@mui/material/Select';
-import Grid from '@mui/material/Grid';
-import Avatar from '@mui/material/Avatar';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
 
-const states = [
-  { value: 'alabama', label: 'Alabama' },
-  { value: 'new-york', label: 'New York' },
-  { value: 'san-francisco', label: 'San Francisco' },
-  { value: 'los-angeles', label: 'Los Angeles' },
-];
-
-const user = {
-  name: 'Sofia Rivers',
-  avatar: '/assets/avatar.png',
-  jobTitle: 'Senior Developer',
-  country: 'USA',
-  city: 'Los Angeles',
-  timezone: 'GTM-7',
+const getApiBaseUrl = () => {
+  const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
+  const baseUrl = process.env.REACT_APP_URL.replace(/^https?:\/\/+/, '');
+  return `${protocol}://${baseUrl}`;
 };
 
 export const Profile = () => {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '20px' }}>
-      {/* AccountInfo */}
-      <Card>
-        <CardContent>
-          <Stack spacing={2} sx={{ alignItems: 'center' }}>
-            <div>
-              <Avatar src={user.avatar} sx={{ height: '80px', width: '80px' }} />
-            </div>
-            <Stack spacing={1} sx={{ textAlign: 'center' }}>
-              <Typography variant="h5">{user.name}</Typography>
-              <Typography color="text.secondary" variant="body2">
-                {user.city}, {user.country}
-              </Typography>
-              <Typography color="text.secondary" variant="body2">
-                {user.timezone}
-              </Typography>
-            </Stack>
-          </Stack>
-        </CardContent>
-        <Divider />
-        <CardActions>
-          <Button fullWidth variant="text">
-            Upload picture
-          </Button>
-        </CardActions>
-      </Card>
+  const { user } = useSelector((state) => state.auth);
+  const [password, setPassword] = useState('');
+  const [confPassword, setConfPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
 
-      {/* AccountDetailsForm */}
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-        }}
-      >
-        <Card>
-          <CardHeader subheader="The information can be edited" title="Profile" />
-          <Divider />
-          <CardContent>
-            <Grid container spacing={3}>
-              <Grid md={6} xs={12}>
-                <FormControl fullWidth required>
-                  <InputLabel>First name</InputLabel>
-                  <OutlinedInput defaultValue="Sofia" label="First name" name="firstName" />
-                </FormControl>
-              </Grid>
-              <Grid md={6} xs={12}>
-                <FormControl fullWidth required>
-                  <InputLabel>Last name</InputLabel>
-                  <OutlinedInput defaultValue="Rivers" label="Last name" name="lastName" />
-                </FormControl>
-              </Grid>
-              <Grid md={6} xs={12}>
-                <FormControl fullWidth required>
-                  <InputLabel>Email address</InputLabel>
-                  <OutlinedInput defaultValue="sofia@devias.io" label="Email address" name="email" />
-                </FormControl>
-              </Grid>
-              <Grid md={6} xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel>Phone number</InputLabel>
-                  <OutlinedInput label="Phone number" name="phone" type="tel" />
-                </FormControl>
-              </Grid>
-              <Grid md={6} xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel>State</InputLabel>
-                  <Select defaultValue="new-york" label="State" name="state" variant="outlined">
-                    {states.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid md={6} xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel>City</InputLabel>
-                  <OutlinedInput label="City" />
-                </FormControl>
-              </Grid>
-            </Grid>
-          </CardContent>
-          <Divider />
-          <CardActions sx={{ justifyContent: 'flex-end' }}>
-            <Button variant="contained">Save details</Button>
-          </CardActions>
-        </Card>
-      </form>
-    </div>
+  const handleUpdate = async () => {
+    if (password !== confPassword) {
+      setMessage('Password dan Konfirmasi Password tidak cocok.');
+      return;
+    }
+
+    setLoading(true);
+    setMessage('');
+    try {
+      const response = await axios.put(
+        `${getApiBaseUrl()}/updateuser/me/${user.uuid}`,
+        { password, confpassword: confPassword },
+        { withCredentials: true }
+      );
+      setMessage(response.data.message);
+    } catch (error) {
+      setMessage(error.response?.data?.message || 'Gagal mengupdate profil.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!user) {
+    return (
+      <Typography variant="h6" color="textSecondary">
+        Anda belum login. Silakan login untuk melihat profil.
+      </Typography>
+    );
+  }
+
+  return (
+    <Card>
+      <CardContent>
+        <Typography variant="h5">Profil Pengguna</Typography>
+        <Divider sx={{ marginY: 2 }} />
+        <Typography variant="body1">
+          Username: <strong>{user.username}</strong>
+        </Typography>
+        <Typography variant="body1">
+          Role: <strong>{user.role}</strong>
+        </Typography>
+        {user.cabang && (
+          <Typography variant="body1">
+            Cabang: <strong>{user.cabang.namacabang}</strong>
+          </Typography>
+        )}
+        <Divider sx={{ marginY: 2 }} />
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Password Baru</InputLabel>
+          <OutlinedInput
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </FormControl>
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Konfirmasi Password</InputLabel>
+          <OutlinedInput
+            type="password"
+            value={confPassword}
+            onChange={(e) => setConfPassword(e.target.value)}
+          />
+        </FormControl>
+        {message && <Typography color="error">{message}</Typography>}
+      </CardContent>
+      <CardActions>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleUpdate}
+          disabled={loading}
+        >
+          {loading ? 'Loading...' : 'Update Profil'}
+        </Button>
+      </CardActions>
+    </Card>
   );
 };

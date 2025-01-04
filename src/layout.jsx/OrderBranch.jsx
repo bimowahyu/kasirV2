@@ -3,7 +3,7 @@ import { Grid, Grid2, useMediaQuery } from '@mui/material';
 import Header from '../componen/kasir/Header';
 import ProductPerCabang from '../componen/kasir/ProductPerCabang';
 
-const OrderBranch = () => {
+const OrderBranch = ({userUuid}) => {
   const isMobile = useMediaQuery('(max-width:768px)'); 
 
   return (
@@ -17,7 +17,7 @@ const OrderBranch = () => {
           <>
             
             <Grid item xs={12}>
-              <ProductPerCabang />
+              <ProductPerCabang userUuid={userUuid} />
             </Grid>
            
           </>
@@ -26,7 +26,7 @@ const OrderBranch = () => {
         {isMobile && (
           <>
             <Grid item xs={12}>
-              <ProductPerCabang />
+              <ProductPerCabang userUuid={userUuid} />
             </Grid>
          
           </>

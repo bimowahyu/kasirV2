@@ -9,9 +9,6 @@ export const OrderePages = () => {
   const navigate = useNavigate();
   const { isError } = useSelector((state) => state.auth);
   
-//   useEffect(() => {
-//     dispatch(Me());
-//   }, [dispatch]);
 useEffect(() => {
     const fetchData = async () => {
         try {

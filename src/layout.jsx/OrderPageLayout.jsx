@@ -4,7 +4,7 @@ import Header from '../componen/kasir/Header';
 import ProductGrid from '../componen/kasir/ProductGrid';
 
 
-const OrderPageLayout = () => {
+const OrderPageLayout = ({userUuid}) => {
   const isMobile = useMediaQuery('(max-width:768px)'); 
 
   return (
@@ -19,7 +19,7 @@ const OrderPageLayout = () => {
           <>
             
             <Grid item xs={12}>
-              <ProductGrid />
+              <ProductGrid userUuid={userUuid}/>
             </Grid>
            
           </>
@@ -28,7 +28,7 @@ const OrderPageLayout = () => {
         {isMobile && (
           <>
             <Grid item xs={12}>
-              <ProductGrid />
+              <ProductGrid userUuid={userUuid}/>
             </Grid>
          
           </>

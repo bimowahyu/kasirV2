@@ -7,7 +7,7 @@ import TransactionsLayout from '../layout.jsx/TransaksionLayout';
 export const TransaksiKasirPages = () => {
     const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isError } = useSelector((state) => state.auth);
+  const { user, isError } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,7 +27,7 @@ export const TransaksiKasirPages = () => {
   }, [isError, navigate]);
   return (
   <>
-    <TransactionsLayout />
+    <TransactionsLayout userUuid={user?.uuid} userRole={user?.role}/>
     </>
   )
 }

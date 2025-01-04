@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, Card, CardContent, Typography } from '@mui/material';
+import { Box, Grid, Card, CardContent, Typography, FormControl, Select, MenuItem  } from '@mui/material';
 import { Doughnut, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -36,6 +36,8 @@ export const Dashboard = () => {
   const [totalCabang, setTotalCabang] = useState(0);
   const [totalTransaksi, setTotalTransaksi] = useState(0);
   const [todayPenjualanSuccess, setTodayPenjualanSuccess] = useState(0);
+  const [monthRange, setMonthRange] = useState('12');
+  const [rawMonthlyData, setRawMonthlyData] = useState({});
 
 
   // Fetch data transaksi menggunakan SWR
@@ -132,12 +134,42 @@ export const Dashboard = () => {
       ],
     }));
   };
-
+  useEffect(() => {
+    
+    if (rawMonthlyData) {
+      processChartData(rawMonthlyData);
+      console.log("Month Range Changed:", monthRange);
+      console.log("Processed Raw Monthly Data:", rawMonthlyData);
+    }
+  }, [rawMonthlyData, monthRange]);
   const processChartData = (monthlyData) => {
-    const labels = Object.keys(monthlyData);
-    const cashData = labels.map((month) => monthlyData[month].cash || 0);
-    const qrisData = labels.map((month) => monthlyData[month].qris || 0);
-
+    setRawMonthlyData(monthlyData);
+    const monthsToShow = parseInt(monthRange);
+  
+    const dataArray = Object.entries(monthlyData).map(([month, values]) => ({
+      month,
+      ...values,
+    }));
+  
+    const monthMap = {
+      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+    };
+  
+    dataArray.sort((a, b) => {
+      const [monthA, yearA] = a.month.split(' ');
+      const [monthB, yearB] = b.month.split(' ');
+      return (
+        new Date(yearA, monthMap[monthA]) - new Date(yearB, monthMap[monthB])
+      );
+    });
+  
+    const filteredData = dataArray.slice(-monthsToShow);
+  
+    const labels = filteredData.map((item) => item.month);
+    const cashData = filteredData.map((item) => item.cash || 0);
+    const qrisData = filteredData.map((item) => item.qris || 0);
+  
     setChartData({
       labels,
       datasets: [
@@ -145,23 +177,27 @@ export const Dashboard = () => {
           label: "Cash Sales",
           backgroundColor: "rgba(63, 81, 181, 0.6)",
           borderColor: "#3f51b5",
-          borderWidth: 1,
-          hoverBackgroundColor: "rgba(63, 81, 181, 0.8)",
-          hoverBorderColor: "#3f51b5",
           data: cashData,
         },
         {
           label: "QRIS Sales",
           backgroundColor: "rgba(255, 152, 0, 0.6)",
           borderColor: "#ff9800",
-          borderWidth: 1,
-          hoverBackgroundColor: "rgba(255, 152, 0, 0.8)",
-          hoverBorderColor: "#ff9800",
           data: qrisData,
         },
       ],
     });
+  
+    console.log("Updated Chart Data:", { labels, datasets: [cashData, qrisData] });
   };
+  
+
+  const handleMonthRangeChange = (event) => {
+    const newRange = event.target.value;
+    setMonthRange(newRange);
+  };
+  
+  
 
   return (
     <Box sx={{ flexGrow: 1, p: 3, backgroundColor: '#f4f6f8', minHeight: '100vh' }}>
@@ -239,11 +275,26 @@ export const Dashboard = () => {
         <Grid item xs={12} md={8}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Monthly Sales
-              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6">
+                  Monthly Sales
+                </Typography>
+                <FormControl sx={{ minWidth: 120 }} size="small">
+                  <Select
+                    value={monthRange}
+                    onChange={handleMonthRangeChange}
+                    displayEmpty
+                  >
+                    <MenuItem value="3">3 Months</MenuItem>
+                    <MenuItem value="6">6 Months</MenuItem>
+                    <MenuItem value="12">12 Months</MenuItem>
+                    <MenuItem value="24">24 Months</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
               <div className="chart-container">
                 <Bar
+                key={monthRange}
                   data={chartData}
                   options={{
                     responsive: true,

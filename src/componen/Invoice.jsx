@@ -43,7 +43,52 @@ export const Invoice = () => {
 
   const exportToExcel = () => {
     const rows = [];
+    let prevCabang = null;
+  
     Object.entries(detailPenjualan).forEach(([cabang, dataCabang]) => {
+      // Add empty row between branches (except for first branch)
+      if (prevCabang !== null) {
+        rows.push({
+          Cabang: '',
+          Barang: '',
+          Kategori: '',
+          "Harga Satuan": '',
+          "Total Terjual": '',
+          "Total Penjualan": ''
+        });
+        
+        // Add total row for previous branch
+        rows.push({
+          Cabang: `Total ${prevCabang}`,
+          Barang: '',
+          Kategori: '',
+          "Harga Satuan": '',
+          "Total Terjual": getTotalTerjual(detailPenjualan[prevCabang]),
+          "Total Penjualan": getTotalPenjualan(detailPenjualan[prevCabang])
+        });
+        
+        // Add another empty row for better spacing
+        rows.push({
+          Cabang: '',
+          Barang: '',
+          Kategori: '',
+          "Harga Satuan": '',
+          "Total Terjual": '',
+          "Total Penjualan": ''
+        });
+      }
+  
+      // Add branch header
+      rows.push({
+        Cabang: `Cabang: ${cabang}`,
+        Barang: '',
+        Kategori: '',
+        "Harga Satuan": '',
+        "Total Terjual": '',
+        "Total Penjualan": ''
+      });
+  
+      // Add items for current branch
       Object.entries(dataCabang.barang).forEach(([namaBarang, barangData]) => {
         rows.push({
           Cabang: cabang,
@@ -54,9 +99,87 @@ export const Invoice = () => {
           "Total Penjualan": barangData.totalPenjualan
         });
       });
+  
+      prevCabang = cabang;
     });
-
+  
+    // Add total for the last branch
+    if (prevCabang !== null) {
+      rows.push({
+        Cabang: '',
+        Barang: '',
+        Kategori: '',
+        "Harga Satuan": '',
+        "Total Terjual": '',
+        "Total Penjualan": ''
+      });
+      
+      rows.push({
+        Cabang: `Total ${prevCabang}`,
+        Barang: '',
+        Kategori: '',
+        "Harga Satuan": '',
+        "Total Terjual": getTotalTerjual(detailPenjualan[prevCabang]),
+        "Total Penjualan": getTotalPenjualan(detailPenjualan[prevCabang])
+      });
+    }
+  
+    // Add grand total at the end
+    rows.push({
+      Cabang: '',
+      Barang: '',
+      Kategori: '',
+      "Harga Satuan": '',
+      "Total Terjual": '',
+      "Total Penjualan": ''
+    });
+    
+    rows.push({
+      Cabang: 'GRAND TOTAL',
+      Barang: '',
+      Kategori: '',
+      "Harga Satuan": '',
+      "Total Terjual": getGrandTotalTerjual(detailPenjualan),
+      "Total Penjualan": getGrandTotalPenjualan(detailPenjualan)
+    });
+  
+    // Helper functions for calculating totals
+    function getTotalTerjual(dataCabang) {
+      return Object.values(dataCabang.barang).reduce((total, barang) => total + barang.totalTerjual, 0);
+    }
+  
+    function getTotalPenjualan(dataCabang) {
+      return Object.values(dataCabang.barang).reduce((total, barang) => total + barang.totalPenjualan, 0);
+    }
+  
+    function getGrandTotalTerjual(data) {
+      return Object.values(data).reduce((total, cabang) => total + getTotalTerjual(cabang), 0);
+    }
+  
+    function getGrandTotalPenjualan(data) {
+      return Object.values(data).reduce((total, cabang) => total + getTotalPenjualan(cabang), 0);
+    }
+  
+    // Create and style the worksheet
     const worksheet = XLSX.utils.json_to_sheet(rows);
+    
+    // Add some style to the worksheet
+    const range = XLSX.utils.decode_range(worksheet['!ref']);
+    
+    // Style configuration
+    const headerStyle = {
+      font: { bold: true },
+      fill: { fgColor: { rgb: "CCCCCC" } }
+    };
+    
+    // Apply styles (Note: Basic XLSX doesn't support much styling, 
+    // you might need xlsx-style package for more styling options)
+    for (let C = range.s.c; C <= range.e.c; C++) {
+      const address = XLSX.utils.encode_cell({ r: 0, c: C });
+      if (!worksheet[address]) worksheet[address] = {};
+      worksheet[address].s = headerStyle;
+    }
+  
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Penjualan");
     XLSX.writeFile(workbook, `Laporan_Penjualan_${selectedMonth}.xlsx`);

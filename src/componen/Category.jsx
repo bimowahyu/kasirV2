@@ -16,6 +16,7 @@ import {
   TableContainer,
   Paper,
 } from "@mui/material";
+import { useSelector } from "react-redux";
 import axios from "axios";
 const getApiBaseUrl = () => {
   const protocol = window.location.protocol === "https:" ? "https" : "http";
@@ -27,7 +28,7 @@ const fetcher = (url) => axios.get(url,{withCredentials: true}).then((res) => re
 
 export const Category = () => {
     const {data : categorys, error: CategoryError, mutate} = useSWR(`${getApiBaseUrl()}/kategori`,fetcher, {withCredentials: true});
-    
+    const { user, isAuthenticated } = useSelector((state) => state.auth);
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState({namakategori: ""});
     const [isEditing, setIsEditing] = useState(false);
@@ -85,9 +86,11 @@ export const Category = () => {
       <Typography variant="h4" gutterBottom>
         Kategori List
       </Typography>
+      {user?.role === 'superadmin' && (
       <Button variant="contained" color="primary" onClick={handleOpen}>
         Add New
       </Button>
+      )}
 
       <Card>
   <Box sx={{ overflowX: 'auto' }}> {/* Wrapper untuk scroll horizontal */}
@@ -96,7 +99,9 @@ export const Category = () => {
         <TableRow>
           <TableCell>No</TableCell>
           <TableCell>Nama Kategori</TableCell>
-          <TableCell>Actions</TableCell>
+           {user?.role === 'superadmin' && (
+                         <TableCell>Actions</TableCell>
+                      )}
         </TableRow>
       </TableHead>
       <TableBody>
@@ -104,6 +109,7 @@ export const Category = () => {
           <TableRow key={kategori.uuid}>
             <TableCell>{index + 1}</TableCell>
             <TableCell>{kategori.namakategori}</TableCell>
+            {user?.role === 'superadmin' && (
             <TableCell>
               <Button size="small" color="primary" onClick={() => handleEdit(kategori)}>
                 Edit
@@ -112,6 +118,7 @@ export const Category = () => {
                 Delete
               </Button>
             </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>

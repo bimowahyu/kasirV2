@@ -16,14 +16,13 @@ import useSWR from 'swr';
 
 ChartJS.register(CategoryScale, LinearScale, ArcElement, BarElement, Tooltip, Legend);
 
-// Fungsi untuk mendapatkan URL API
 const getApiBaseUrl = () => {
   const protocol = window.location.protocol === "https:" ? "https" : "http";
   const baseUrl = process.env.REACT_APP_URL.replace(/^https?:\/\//, "");
   return `${protocol}://${baseUrl}`;
 };
 
-// Fetcher untuk SWR
+
 const fetcher = (url) => axios.get(url, { withCredentials: true }).then((res) => res.data);
 
 export const Dashboard = () => {
@@ -38,9 +37,10 @@ export const Dashboard = () => {
   const [todayPenjualanSuccess, setTodayPenjualanSuccess] = useState(0);
   const [monthRange, setMonthRange] = useState('12');
   const [rawMonthlyData, setRawMonthlyData] = useState({});
-
-
-  // Fetch data transaksi menggunakan SWR
+  const [doughnutChartData, setDoughnutChartData] = useState({
+    labels: [],
+    datasets: [],
+  })
   const { data, error, req } = useSWR(`${getApiBaseUrl()}/gettransaksi`, fetcher);
 
   useEffect(() => {
@@ -196,7 +196,53 @@ export const Dashboard = () => {
     const newRange = event.target.value;
     setMonthRange(newRange);
   };
+  const fetchBarangData = async () => {
+    try {
+      const response = await axios.get(`${getApiBaseUrl()}/barang`, { withCredentials: true });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching barang data:", error);
+      return null;
+    }
+  };
   
+  const fetchKategoriData = async () => {
+    try {
+      const response = await axios.get(`${getApiBaseUrl()}/kategori`, { withCredentials: true });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching kategori data:", error);
+      return null;
+    }
+  };
+  useEffect(() => {
+    const loadDoughnutData = async () => {
+      const barangData = await fetchBarangData();
+      const kategoriData = await fetchKategoriData();
+  
+      if (barangData && kategoriData) {
+        // Hitung jumlah barang berdasarkan kategori
+        const kategoriCount = kategoriData.data.map((kategori) => ({
+          label: kategori.namakategori,
+          count: barangData.data.filter((barang) => barang.kategoriuuid === kategori.uuid).length,
+        }));
+  
+        setDoughnutChartData({
+          labels: kategoriCount.map((item) => item.label),
+          datasets: [
+            {
+              data: kategoriCount.map((item) => item.count),
+              backgroundColor: ['#3f51b5', '#ff9800', '#4caf50', '#e91e63', '#9c27b0'],
+              hoverBackgroundColor: ['#5c6bc0', '#ffb74d', '#66bb6a', '#f06292', '#ba68c8'],
+            },
+          ],
+        });
+      }
+    };
+  
+    loadDoughnutData();
+  }, []);
+    
   
 
   return (
@@ -328,29 +374,22 @@ export const Dashboard = () => {
         </Grid>
         
         <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Traffic Source
-              </Typography>
-              <div className="chart-container">
-                <Doughnut
-                  data={{
-                    labels: ['Desktop', 'Mobile', 'Tablet'],
-                    datasets: [
-                      {
-                        data: [65, 25, 10],
-                        backgroundColor: ['#3f51b5', '#ff9800', '#4caf50'],
-                        hoverBackgroundColor: ['#5c6bc0', '#ffb74d', '#66bb6a'],
-                      },
-                    ],
-                  }}
-                  options={{ responsive: true, maintainAspectRatio: false }}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </Grid>
+  <Card>
+    <CardContent>
+      <Typography variant="h6" gutterBottom>
+        Kategori Barang
+      </Typography>
+      <div className="chart-container">
+        <Doughnut
+          data={doughnutChartData}
+          options={{ responsive: true, maintainAspectRatio: false }}
+        />
+      </div>
+    </CardContent>
+  </Card>
+</Grid>
+
+
       </Grid>
     </Box>
   );

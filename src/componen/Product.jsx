@@ -19,6 +19,8 @@ import {
   Pagination
 } from "@mui/material";
 import axios from "axios";
+import { useSelector } from "react-redux";
+import { UploadProduk } from "./uploadProduk";
 
 const getApiBaseUrl = () => {
   const protocol = window.location.protocol === "https:" ? "https" : "http";
@@ -29,6 +31,7 @@ const getApiBaseUrl = () => {
 const fetcher = (url) => axios.get(url).then((res) => res.data.data);
 
 export const Product = () => {
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { data: products, error: productError, mutate } = useSWR(
     `${getApiBaseUrl()}/barang`,
     fetcher,
@@ -173,12 +176,21 @@ export const Product = () => {
   return (
     <Box sx={{ padding: 2, overflowX: "auto" }}>
       <Typography variant="h4" gutterBottom>
+        <Typography>
+        {user?.role === 'superadmin' && (
+               <UploadProduk />
+            )}
+      
+        </Typography>
         Product List
       </Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <Button variant="contained" color="primary" onClick={handleOpen}>
-          Add Product
-        </Button>
+      {user?.role === 'superadmin' && (
+                <Button variant="contained" color="primary" onClick={handleOpen}>
+                Add Product
+              </Button>
+            )}
+     
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel id="filter-kategori-label">Filter Kategori</InputLabel>
           <Select
@@ -208,7 +220,10 @@ export const Product = () => {
                 <TableCell>Kategori</TableCell>
                 <TableCell>Foto</TableCell>
                 <TableCell>Tanggal Dibuat</TableCell>
-                <TableCell>Actions</TableCell>
+                {user?.role === 'superadmin' && (
+               <TableCell>Actions</TableCell>
+            )}
+               
               </TableRow>
             </TableHead>
             <TableBody>
@@ -230,22 +245,25 @@ export const Product = () => {
                   <TableCell>
                     {new Date(product.createdAt).toLocaleString()}
                   </TableCell>
-                  <TableCell>
-                    <Button
-                      size="small"
-                      color="primary"
-                      onClick={() => handleEdit(product)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="small"
-                      color="secondary"
-                      onClick={() => handleDelete(product.uuid)}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
+                  {user?.role === 'superadmin' && (
+             <TableCell>
+             <Button
+               size="small"
+               color="primary"
+               onClick={() => handleEdit(product)}
+             >
+               Edit
+             </Button>
+             <Button
+               size="small"
+               color="secondary"
+               onClick={() => handleDelete(product.uuid)}
+             >
+               Delete
+             </Button>
+           </TableCell>
+            )}
+                  
                 </TableRow>
               ))}
             </TableBody>

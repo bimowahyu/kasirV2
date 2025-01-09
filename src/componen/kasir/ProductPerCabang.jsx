@@ -215,149 +215,149 @@ const ProductPerCabang = () => {
     return `<div id="qrcode-container" style="background: white; padding: 16px; border-radius: 8px; display: inline-block;"></div>`;
   };
   //-----------------------TRANSAKSI MIDTRANS BANYAK OPSI(SNAP)--------------------------
-  const processQrisPayment = async (total) => {
-    try {
-      const response = await axios.post(
-        `${getApiBaseUrl()}/createtransaksicabang`,
-        {
-          pembayaran: "qris",
-          items: orders.map((order) => ({
-            baranguuid: order.id,
-            jumlahbarang: order.quantity,
-          })),
-        },
-        { withCredentials: true }
-      );
-  
-      const { qris_url, transaksi } = response.data?.data || {};
-      const orderId = transaksi?.order_id;
-  
-      // Validasi respons
-      if (!qris_url || !orderId) {
-        Swal.fire("Terjadi kesalahan", "Data pembayaran QRIS tidak tersedia", "error");
-        return;
-      }
-  
-      // Tampilkan modal dengan iframe Midtrans
-      Swal.fire({
-        title: "Pembayaran QRIS",
-        html: `
-          <div class="text-center">
-            <p style="font-size: 16px; margin: 10px 0;">
-              <strong>Total Pembayaran:</strong> Rp ${total.toLocaleString()}
-            </p>
-            <p style="font-size: 14px; color: #666; margin: 10px 0;">
-              Order ID: ${orderId}
-            </p>
-            <iframe 
-              src="${qris_url}"
-              frameborder="0"
-              width="100%"
-              height="550px"
-            ></iframe>
-          </div>
-        `,
-        showConfirmButton: true,
-        confirmButtonText: "Tutup",
-        width: 500,
-        showCloseButton: true,
-        allowOutsideClick: false,
-        didOpen: () => {
-          const handlePaymentStatus = (event) => {
-            if (event.data === "success") {
-              Swal.close();
-              startPaymentStatusPolling(orderId, () => {
-                setReceiptData({
-                  total,
-                  paymentMethod: "Qris",
-                  items: orders.map((order) => ({
-                    id: order.id,
-                    name: order.name,
-                    price: order.price,
-                    quantity: order.quantity,
-                  })),
-                });
-              });
-            }
-          };
-
-          window.addEventListener("message", handlePaymentStatus);
-          Swal.getPopup().addEventListener("click", () => {
-            window.removeEventListener("message", handlePaymentStatus);
-          });
-        },
-      });
-    } catch (error) {
-      console.error("Error processing QRIS payment:", error);
-      Swal.fire("Terjadi kesalahan", "Gagal memproses pembayaran QRIS", "error");
-    }
-  };
-  
-  //-----------------TRANSAKSI KSHUS QRIS(COREAPI)------------------------//
   // const processQrisPayment = async (total) => {
   //   try {
-  //     const response = await axios.post(`${getApiBaseUrl()}/createtransaksicabang`, {
-  //       pembayaran: "qris",
-  //       items: orders.map((order) => ({
-  //         baranguuid: order.id,
-  //         jumlahbarang: order.quantity,
-  //       })),
-  //     },{withCredentials: true});
+  //     const response = await axios.post(
+  //       `${getApiBaseUrl()}/createtransaksicabang`,
+  //       {
+  //         pembayaran: "qris",
+  //         items: orders.map((order) => ({
+  //           baranguuid: order.id,
+  //           jumlahbarang: order.quantity,
+  //         })),
+  //       },
+  //       { withCredentials: true }
+  //     );
   
-  //     const { qris_data, transaksi } = response.data?.data || {};
-  //     const qrString = qris_data?.qr_string;
+  //     const { qris_url, transaksi } = response.data?.data || {};
   //     const orderId = transaksi?.order_id;
-  //     const generatedImageUrl = qris_data?.generated_image_url;
   
-  //     if (!qrString || !orderId) {
-  //       Swal.fire("Terjadi kesalahan", "Data QRIS tidak tersedia", "error");
+  //     // Validasi respons
+  //     if (!qris_url || !orderId) {
+  //       Swal.fire("Terjadi kesalahan", "Data pembayaran QRIS tidak tersedia", "error");
   //       return;
   //     }
-  //     setPaymentDialogOpen(false);
+  
+  //     // Tampilkan modal dengan iframe Midtrans
   //     Swal.fire({
-  //       title: "Scan QRIS",
+  //       title: "Pembayaran QRIS",
   //       html: `
   //         <div class="text-center">
   //           <p style="font-size: 16px; margin: 10px 0;">
-  //         <strong>Total Pembayaran:</strong> Rp ${formatCurrency(total)}
+  //             <strong>Total Pembayaran:</strong> Rp ${total.toLocaleString()}
   //           </p>
   //           <p style="font-size: 14px; color: #666; margin: 10px 0;">
   //             Order ID: ${orderId}
   //           </p>
-  //           <p style="font-size: 14px; color: #444;">
-  //             Silakan scan kode QR menggunakan aplikasi e-wallet Anda.
-  //           </p>
-  //           <img src="${generatedImageUrl}" alt="QRIS Code" style="max-width: 256px; height: auto;"/>
+  //           <iframe 
+  //             src="${qris_url}"
+  //             frameborder="0"
+  //             width="100%"
+  //             height="550px"
+  //           ></iframe>
   //         </div>
   //       `,
   //       showConfirmButton: true,
   //       confirmButtonText: "Tutup",
-  //       width: 600,
+  //       width: 500,
   //       showCloseButton: true,
-  //     });
-  //     startPaymentStatusPolling(orderId, () => {
-  //       setReceiptData({
-  //         total,
-  //         paymentMethod: "Qris",
-  //   items: orders.map((order) => ({
-  //     id: order.id,
-  //     name: order.name,
-  //     price: order.price,
-  //     quantity: order.quantity,
-  //   })),
-  // });
-  //       setReceiptDialogOpen(true);
-  //       setOrders([]); 
+  //       allowOutsideClick: false,
+  //       didOpen: () => {
+  //         const handlePaymentStatus = (event) => {
+  //           if (event.data === "success") {
+  //             Swal.close();
+  //             startPaymentStatusPolling(orderId, () => {
+  //               setReceiptData({
+  //                 total,
+  //                 paymentMethod: "Qris",
+  //                 items: orders.map((order) => ({
+  //                   id: order.id,
+  //                   name: order.name,
+  //                   price: order.price,
+  //                   quantity: order.quantity,
+  //                 })),
+  //               });
+  //             });
+  //           }
+  //         };
+
+  //         window.addEventListener("message", handlePaymentStatus);
+  //         Swal.getPopup().addEventListener("click", () => {
+  //           window.removeEventListener("message", handlePaymentStatus);
+  //         });
+  //       },
   //     });
   //   } catch (error) {
   //     console.error("Error processing QRIS payment:", error);
   //     Swal.fire("Terjadi kesalahan", "Gagal memproses pembayaran QRIS", "error");
   //   }
   // };
+  
+  //-----------------TRANSAKSI KSHUS QRIS(COREAPI)------------------------//
+  const processQrisPayment = async (total) => {
+    try {
+      const response = await axios.post(`${getApiBaseUrl()}/createtransaksicabang`, {
+        pembayaran: "qris",
+        items: orders.map((order) => ({
+          baranguuid: order.id,
+          jumlahbarang: order.quantity,
+        })),
+      },{withCredentials: true});
+  
+      const { qris_data, transaksi } = response.data?.data || {};
+      const qrString = qris_data?.qr_string;
+      const orderId = transaksi?.order_id;
+      const generatedImageUrl = qris_data?.generated_image_url;
+  
+      if (!qrString || !orderId) {
+        Swal.fire("Terjadi kesalahan", "Data QRIS tidak tersedia", "error");
+        return;
+      }
+      setPaymentDialogOpen(false);
+      Swal.fire({
+        title: "Scan QRIS",
+        html: `
+          <div class="text-center">
+            <p style="font-size: 16px; margin: 10px 0;">
+          <strong>Total Pembayaran:</strong> Rp ${formatCurrency(total)}
+            </p>
+            <p style="font-size: 14px; color: #666; margin: 10px 0;">
+              Order ID: ${orderId}
+            </p>
+            <p style="font-size: 14px; color: #444;">
+              Silakan scan kode QR menggunakan aplikasi e-wallet Anda.
+            </p>
+            <img src="${generatedImageUrl}" alt="QRIS Code" style="max-width: 256px; height: auto;"/>
+          </div>
+        `,
+        showConfirmButton: true,
+        confirmButtonText: "Tutup",
+        width: 600,
+        showCloseButton: true,
+      });
+      startPaymentStatusPolling(orderId, () => {
+        setReceiptData({
+          total,
+          paymentMethod: "Qris",
+    items: orders.map((order) => ({
+      id: order.id,
+      name: order.name,
+      price: order.price,
+      quantity: order.quantity,
+    })),
+  });
+        setReceiptDialogOpen(true);
+        setOrders([]); 
+      });
+    } catch (error) {
+      console.error("Error processing QRIS payment:", error);
+      Swal.fire("Terjadi kesalahan", "Gagal memproses pembayaran QRIS", "error");
+    }
+  };
  
-  // useEffect(() => {
-  //   dispatch(Me());
-  // }, [dispatch]);
+  useEffect(() => {
+    dispatch(Me());
+  }, [dispatch]);
   
 
   // **Render QR Code**
@@ -377,7 +377,7 @@ const ProductPerCabang = () => {
             text: "Terima kasih atas pembayaran Anda.",
             icon: "success",
           });
-          if (onSuccess) onSuccess(); // Callback untuk aksi tambahan
+          if (onSuccess) onSuccess();
         } else if (status === "expire" || status === "cancel") {
           clearInterval(pollInterval);
           Swal.fire({

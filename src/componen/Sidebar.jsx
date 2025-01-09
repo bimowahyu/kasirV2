@@ -49,7 +49,7 @@ export const Sidebar = () => {
         }}
       >
         <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-          My App
+          Point Of Sales
         </Typography>
       </Box>
 

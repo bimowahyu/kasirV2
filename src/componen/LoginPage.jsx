@@ -34,6 +34,8 @@ export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [isManualLogin, setIsManualLogin] = useState(false);
+
 
   const { user, isError, isSuccess, isLoading, message } = useSelector((state) => state.auth);
   const fetcher = (url) =>
@@ -51,41 +53,40 @@ export const LoginPage = () => {
       setRememberMe(true);
     }
   }, []);
+  
 
   useEffect(() => {
-    console.log("User:", user);
-    console.log("isSuccess:", isSuccess);
-
-    if (isSuccess && user) {
-      // Check if user.data exists (from backend response structure)
-      const userData = user.data || user;
-      
-      Swal.fire({
-        icon: "success",
-        title: "Login Berhasil!",
-        text: `Selamat datang kembali ${userData.username}`,
-        showConfirmButton: false,
-        timer: 2000,
-      });
-      const userRole = userData.role;
-      console.log("User Role:", userRole); 
-
-      if (userRole === "admin" || userRole === "superadmin") {
-        navigate("/Dashboard");
-      } else if (userRole === "kasir") {
-        //navigate("/order");
-        navigate("/produkpercabang")
+    if (isManualLogin) {
+      if (isSuccess && user) {
+        const userData = user.data || user;
+  
+        Swal.fire({
+          icon: "success",
+          title: "Login Berhasil!",
+          text: `Selamat datang kembali ${userData.username}`,
+          showConfirmButton: false,
+          timer: 2000,
+        });
+  
+        const userRole = userData.role;
+        if (userRole === "admin" || userRole === "superadmin") {
+          navigate("/Dashboard");
+        } else if (userRole === "kasir") {
+          navigate("/produkpercabang");
+        }
+      } else if (isError && message) {
+        Swal.fire({
+          icon: "error",
+          title: "Login Gagal!",
+          text: message,
+          confirmButtonText: "OK",
+        });
       }
-    } else if (isError && message) {
-      Swal.fire({
-        icon: "error",
-        title: "Login Gagal!",
-        text: message,
-        confirmButtonText: "OK",
-      });
+  
+      dispatch(reset());
+      setIsManualLogin(false);
     }
-    dispatch(reset());
-  }, [isSuccess, isError, message, user, navigate, dispatch]);
+  }, [isSuccess, isError, message, user, navigate, dispatch, isManualLogin]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -97,7 +98,7 @@ export const LoginPage = () => {
       });
       return;
     }
-
+  
     if (rememberMe) {
       localStorage.setItem("username", username);
       localStorage.setItem("password", password);
@@ -105,13 +106,15 @@ export const LoginPage = () => {
       localStorage.removeItem("username");
       localStorage.removeItem("password");
     }
-
+  
+    setIsManualLogin(true); 
     try {
       await dispatch(Login({ username, password }));
     } catch (error) {
       console.error("Login error:", error);
     }
   };
+  
 
   return (
     <Stack

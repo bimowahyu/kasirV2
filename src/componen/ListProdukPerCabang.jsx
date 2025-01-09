@@ -17,6 +17,11 @@ import {
   Select,
   Snackbar,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import axios from "axios";
 
@@ -29,8 +34,12 @@ const getApiBaseUrl = () => {
 const fetcher = (url) => axios.get(url, { withCredentials: true }).then((res) => res.data.data);
 
 export const ListProdukPerCabang = () => {
-  // Get auth state from Redux
   const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const [selectedBranch, setSelectedBranch] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [deleteProduct, setDeleteProduct] = useState(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const { data: branchProducts, mutate: mutateBranchProducts } = useSWR(
     `${getApiBaseUrl()}/barangcabangbyrole`,
@@ -38,23 +47,20 @@ export const ListProdukPerCabang = () => {
   );
   const { data: branches } = useSWR(`${getApiBaseUrl()}/cabangbyrole`, fetcher);
 
-  const [selectedBranch, setSelectedBranch] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
-  // Set default selected branch for admin
   useEffect(() => {
     if (user?.role === 'admin' && branches?.length === 1) {
       setSelectedBranch(branches[0].uuid);
     }
   }, [user, branches]);
 
-  const handleDeleteProduct = async (baranguuid, cabanguuid) => {
+  const handleDeleteConfirm = async () => {
+    if (!deleteProduct) return;
+    
     try {
       await axios.delete(
-        `${getApiBaseUrl()}/deletebarangcabang/${baranguuid}`,
+        `${getApiBaseUrl()}/deletebarangcabang/${deleteProduct.baranguuid}`,
         {
-          data: { baranguuid },
+          data: { baranguuid: deleteProduct.baranguuid },
           withCredentials: true
         }
       );
@@ -62,15 +68,21 @@ export const ListProdukPerCabang = () => {
       mutateBranchProducts();
     } catch (error) {
       setError(error.response?.data?.message || "Gagal menghapus produk.");
+    } finally {
+      setShowDeleteDialog(false);
+      setDeleteProduct(null);
     }
   };
 
-  const filteredProducts = branchProducts?.filter(
-    (item) => !selectedBranch || item.Cabang?.uuid === selectedBranch
-  );
+  // Improved filtering logic with useMemo
+  const filteredProducts = React.useMemo(() => {
+    if (!branchProducts) return [];
+    if (!selectedBranch) return branchProducts;
+    return branchProducts.filter(product => product.Cabang.uuid === selectedBranch);
+  }, [branchProducts, selectedBranch]);
 
   if (!isAuthenticated) {
-    return <div>Silakan login terlebih dahulu</div>;
+    return <Box padding={3}>Silakan login terlebih dahulu</Box>;
   }
 
   return (
@@ -79,7 +91,6 @@ export const ListProdukPerCabang = () => {
         Produk Berdasarkan Cabang
       </Typography>
       
-      {/* Only show branch selector for superadmin */}
       {user?.role === 'superadmin' && (
         <FormControl fullWidth margin="normal">
           <InputLabel>Pilih Cabang</InputLabel>
@@ -87,7 +98,7 @@ export const ListProdukPerCabang = () => {
             value={selectedBranch}
             onChange={(e) => setSelectedBranch(e.target.value)}
           >
-            <MenuItem value="">Semua Cabang</MenuItem>
+            
             {branches?.map((branch) => (
               <MenuItem key={branch.uuid} value={branch.uuid}>
                 {branch.namacabang}
@@ -96,52 +107,76 @@ export const ListProdukPerCabang = () => {
           </Select>
         </FormControl>
       )}
-
-      <Card>
-        <Box sx={{ overflowX: "auto" }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Nama Barang</TableCell>
-                <TableCell>Kategori</TableCell>
-                <TableCell>Harga</TableCell>
-                <TableCell>Cabang</TableCell>
-                <TableCell>Aksi</TableCell>
+{selectedBranch && (
+  <Card>
+    <Box sx={{ overflowX: "auto" }}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Nama Barang</TableCell>
+            <TableCell>Kategori</TableCell>
+            <TableCell>Harga</TableCell>
+            <TableCell>Cabang</TableCell>
+            <TableCell>Aksi</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
+              <TableRow key={product.baranguuid}>
+                <TableCell>{product.Barang.namabarang}</TableCell>
+                <TableCell>{product.Barang.Kategori.namakategori}</TableCell>
+                <TableCell>{product.Barang.harga}</TableCell>
+                <TableCell>{product.Cabang.namacabang}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => {
+                      setDeleteProduct(product);
+                      setShowDeleteDialog(true);
+                    }}
+                  >
+                    Hapus
+                  </Button>
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredProducts?.length > 0 ? (
-                filteredProducts.map((product) => (
-                  <TableRow key={product.baranguuid}>
-                    <TableCell>{product.Barang.namabarang}</TableCell>
-                    <TableCell>{product.Barang.Kategori.namakategori}</TableCell>
-                    <TableCell>{product.Barang.harga}</TableCell>
-                    <TableCell>{product.Cabang.namacabang}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={() =>
-                          handleDeleteProduct(product.baranguuid, product.cabanguuid)
-                        }
-                      >
-                        Hapus
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} align="center">
-                    Tidak ada produk untuk cabang ini.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Box>
-      </Card>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5} align="center">
+                Tidak ada produk untuk cabang ini.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </Box>
+  </Card>
+)}
 
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+      >
+        <DialogTitle>Konfirmasi Hapus Produk</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Apakah Anda yakin ingin menghapus produk "{deleteProduct?.Barang.namabarang}" 
+            dari cabang "{deleteProduct?.Cabang.namacabang}"?
+            Tindakan ini tidak dapat dibatalkan.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowDeleteDialog(false)}>Batal</Button>
+          <Button onClick={handleDeleteConfirm} color="error" autoFocus>
+            Hapus
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Notifications */}
       <Snackbar
         open={!!error}
         autoHideDuration={6000}
@@ -162,3 +197,4 @@ export const ListProdukPerCabang = () => {
     </Box>
   );
 };
+

@@ -55,10 +55,12 @@ export const Navbar = () => {
 
           {/* Navbar Right Actions */}
           <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-            <Tooltip title="Contacts">
+            <Tooltip title="User List">
+            <Link to="/userlist" style={{ textDecoration: 'none' }}>
               <IconButton>
                 <UsersIcon />
               </IconButton>
+            </Link>
             </Tooltip>
             <Tooltip title="Notifications">
               <Badge badgeContent={4} color="success" variant="dot">
@@ -68,11 +70,15 @@ export const Navbar = () => {
               </Badge>
             </Tooltip>
             <Link to="/profile" style={{ textDecoration: 'none' }}>
-                <Avatar 
-                    src="/assets/avatar.png" 
-                    sx={{ cursor: 'pointer', width: 40, height: 40 }} 
-                    alt="Profile Avatar" 
-                />
+            <Avatar
+                    sx={{
+                      cursor: 'pointer',
+                      width: 40,
+                      height: 40,
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                    }}
+                  />
                 </Link>
           </Stack>
         </Stack>

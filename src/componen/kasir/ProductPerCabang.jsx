@@ -636,13 +636,13 @@ const OrdersList = () => (
     height: isMobile ? '100%' : 'auto',
     bgcolor: 'white',
     borderRadius: isMobile ? 0 : 2,
-    p: 2,
+    p: 5,
     boxShadow: 2
   }}>
     <Typography variant="p" sx={{ mb: 2, fontWeight: 'bold' }}>
       Order List
     </Typography>
-    <div style={{ maxHeight: '300px', overflowY: 'auto', padding: '5px', border: '1px solid #ddd', borderRadius: '4px' }}>
+    <div style={{ maxHeight: '300px', overflowY: 'auto', padding: '1px', border: '1px solid #ddd', borderRadius: '1px' }}>
     <List>
       {orders.map((order) => (
         <ListItem
@@ -743,7 +743,7 @@ const OrdersList = () => (
       height: '100vh',
       display: 'flex',
       flexDirection: 'column',
-      overflow: 'hidden' // Prevent outer scrolling
+      overflow: 'hidden' 
     }}>
       {isMobile && (
         <AppBar position="static" color="default" elevation={1}>
@@ -764,7 +764,7 @@ const OrdersList = () => (
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden', // Container shouldn't scroll
+        overflow: 'hidden', 
         bgcolor: '#f5f5f5',
         p: 2,
       }}>
@@ -772,38 +772,63 @@ const OrdersList = () => (
         <Box sx={{ 
           display: 'flex',
           gap: 2,
-          height: '100%', // Take full height
+          height: '100%', 
         }}>
           {/* Products Section */}
           <Box sx={{ 
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: 0, // Important for nested flex scrolling
-          }}>
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
+      }}>
             {/* Filters */}
-            <Box sx={{ 
-              backgroundColor: 'white',
-              p: 2,
-              borderRadius: 1,
-              boxShadow: 1,
-              mb: 2
-            }}>
-              <FormControl fullWidth sx={{ mb: isMobile ? 1 : 0 }}>
-                <Select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  displayEmpty
-                  size="small"
-                >
-                  <MenuItem value="">All Categories</MenuItem>
-                  {categories.map((category) => (
-                    <MenuItem key={category.uuid} value={category.namakategori}>
-                      {category.namakategori}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+            <Box 
+            sx={{ 
+              backgroundColor: 'white', 
+              p: 2, 
+              borderRadius: 1, 
+              boxShadow: 1, 
+              mb: 2,
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: { xs: 1, sm: 2 }, 
+            }}
+          >
+            <FormControl 
+  fullWidth 
+  size="small"
+  sx={{
+    minWidth: 150,
+  }}
+>
+<Select
+    value={selectedCategory}
+    onChange={(e) => setSelectedCategory(e.target.value)}
+    displayEmpty
+    sx={{
+      '& .MuiSelect-select': {
+        padding: '8px 12px',
+        lineHeight: '1.5', 
+      },
+    }}
+  >
+    <MenuItem value="">All Categories</MenuItem>
+    {categories.map((category) => (
+      <MenuItem 
+        key={category.uuid} 
+        value={category.namakategori}
+        sx={{
+          padding: '8px 12px',
+          whiteSpace: 'nowrap', 
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        {category.namakategori}
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
 
               <Box sx={{ 
                 mt: isMobile ? 1 : 0,
@@ -867,21 +892,24 @@ const OrdersList = () => (
       >
                 {filteredProducts.map((product) => (
                   <Grid item xs={12} sm={6} md={4} key={product.uuid}>
-                    <Card sx={{ 
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      bgcolor: 'white',
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      boxShadow: 2
-                    }}>
+                 <Card
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    bgcolor: 'white',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: 1, 
+                    padding: 1, 
+                  }}
+                >
                       <CardMedia
                         component="img"
                         image={`${getApiBaseUrl()}/uploads/${product?.Barang?.foto || product?.foto}`}
                         alt={product?.Barang?.namabarang || product?.namabarang}
                          sx={{ 
-                  height: { xs: 120, sm: 140 }, // Slightly smaller image height on mobile
+                          height: { xs: 100, sm: 120 },
                   objectFit: 'cover'
                 }}
                       />

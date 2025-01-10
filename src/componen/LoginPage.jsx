@@ -36,53 +36,50 @@ export const LoginPage = () => {
   const dispatch = useDispatch();
   const [isManualLogin, setIsManualLogin] = useState(false);
 
-
   const { user, isError, isSuccess, isLoading, message } = useSelector((state) => state.auth);
-  const fetcher = (url) =>
-    axios
-      .get(url, { withCredentials: true }) 
-      .then((res) => res.data);
   const { data, error } = useSWR(`${getApiBaseUrl()}/`, fetcher);
 
+  // Load saved credentials
   useEffect(() => {
     const savedUsername = localStorage.getItem("username");
     const savedPassword = localStorage.getItem("password");
-    if (savedUsername && savedPassword) {
+    const savedRememberMe = localStorage.getItem("rememberMe") === "true";
+
+    if (savedUsername && savedPassword && savedRememberMe) {
       setUsername(savedUsername);
       setPassword(savedPassword);
       setRememberMe(true);
     }
   }, []);
-  
 
+  // Handle login response
   useEffect(() => {
-    if (isManualLogin) {
-      if (isSuccess && user) {
-        const userData = user.data || user;
-  
-        Swal.fire({
-          icon: "success",
-          title: "Login Berhasil!",
-          text: `Selamat datang kembali ${userData.username}`,
-          showConfirmButton: false,
-          timer: 2000,
-        });
-  
-        const userRole = userData.role;
-        if (userRole === "admin" || userRole === "superadmin") {
-          navigate("/Dashboard");
-        } else if (userRole === "kasir") {
-          navigate("/produkpercabang");
-        }
-      } else if (isError && message) {
-        Swal.fire({
-          icon: "error",
-          title: "Login Gagal!",
-          text: message,
-          confirmButtonText: "OK",
-        });
+    if (isSuccess && user) {
+      const userData = user.data || user;
+      Swal.fire({
+        icon: "success",
+        title: "Login Berhasil!",
+        text: `Selamat datang kembali ${userData.username}`,
+        showConfirmButton: false,
+        timer: 2000,
+      });
+
+      const userRole = userData.role;
+      if (userRole === "admin" || userRole === "superadmin") {
+        navigate("/Dashboard");
+      } else if (userRole === "kasir") {
+        navigate("/produkpercabang");
       }
-  
+    } else if (isError && message && isManualLogin) {
+      Swal.fire({
+        icon: "error",
+        title: "Login Gagal!",
+        text: message,
+        confirmButtonText: "OK",
+      });
+    }
+    
+    if (isSuccess || isError) {
       dispatch(reset());
       setIsManualLogin(false);
     }
@@ -90,6 +87,7 @@ export const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    
     if (!username || !password) {
       Swal.fire({
         icon: "warning",
@@ -102,19 +100,20 @@ export const LoginPage = () => {
     if (rememberMe) {
       localStorage.setItem("username", username);
       localStorage.setItem("password", password);
+      localStorage.setItem("rememberMe", "true");
     } else {
       localStorage.removeItem("username");
       localStorage.removeItem("password");
+      localStorage.removeItem("rememberMe");
     }
   
-    setIsManualLogin(true); 
+    setIsManualLogin(true);
     try {
       await dispatch(Login({ username, password }));
     } catch (error) {
       console.error("Login error:", error);
     }
   };
-  
 
   return (
     <Stack

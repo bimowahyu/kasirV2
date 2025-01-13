@@ -11,7 +11,9 @@ import {
   TableRow,
   TextField,
   Typography,
-  Button
+  Button,
+  Grid,
+  Paper 
 } from '@mui/material';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
@@ -36,15 +38,49 @@ export const Invoice = () => {
   if (!data) return <CircularProgress />;
 
   const detailPenjualan = data?.data?.detailPenjualan || {};
+  const totalPenjualanKeseluruhan = data?.data?.totalPenjualanKeseluruhan || 0;
+  const totalPembayaranQRIS = data?.data?.totalPembayaranQRIS || 0;
+  const totalPembayaranCash = data?.data?.totalPembayaranCash || 0;
 
   const handleMonthChange = (event) => {
     setSelectedMonth(event.target.value);
   };
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR'
+    }).format(amount);
+  };
 
-  const exportToExcel = () => {
+
+    const exportToExcel = () => {
     const rows = [];
     let prevCabang = null;
-  
+
+    // Add report header
+    rows.push({
+      Cabang: `LAPORAN PENJUALAN BULAN ${selectedMonth}`,
+      Barang: '',
+      Kategori: '',
+      "Harga Satuan": '',
+      "Total Terjual": '',
+      "Total Penjualan": '',
+      "QRIS": '',
+      "Cash": ''
+    });
+
+    // Add empty row after header
+    rows.push({
+      Cabang: '',
+      Barang: '',
+      Kategori: '',
+      "Harga Satuan": '',
+      "Total Terjual": '',
+      "Total Penjualan": '',
+      "QRIS": '',
+      "Cash": ''
+    });
+
     Object.entries(detailPenjualan).forEach(([cabang, dataCabang]) => {
       // Add empty row between branches (except for first branch)
       if (prevCabang !== null) {
@@ -54,30 +90,12 @@ export const Invoice = () => {
           Kategori: '',
           "Harga Satuan": '',
           "Total Terjual": '',
-          "Total Penjualan": ''
-        });
-        
-        // Add total row for previous branch
-        rows.push({
-          Cabang: `Total ${prevCabang}`,
-          Barang: '',
-          Kategori: '',
-          "Harga Satuan": '',
-          "Total Terjual": getTotalTerjual(detailPenjualan[prevCabang]),
-          "Total Penjualan": getTotalPenjualan(detailPenjualan[prevCabang])
-        });
-        
-        // Add another empty row for better spacing
-        rows.push({
-          Cabang: '',
-          Barang: '',
-          Kategori: '',
-          "Harga Satuan": '',
-          "Total Terjual": '',
-          "Total Penjualan": ''
+          "Total Penjualan": '',
+          "QRIS": '',
+          "Cash": ''
         });
       }
-  
+
       // Add branch header
       rows.push({
         Cabang: `Cabang: ${cabang}`,
@@ -85,9 +103,57 @@ export const Invoice = () => {
         Kategori: '',
         "Harga Satuan": '',
         "Total Terjual": '',
-        "Total Penjualan": ''
+        "Total Penjualan": '',
+        "QRIS": '',
+        "Cash": ''
       });
-  
+
+      // Add payment method summary for branch
+      rows.push({
+        Cabang: 'Metode Pembayaran:',
+        Barang: '',
+        Kategori: '',
+        "Harga Satuan": '',
+        "Total Terjual": '',
+        "Total Penjualan": '',
+        "QRIS": `${dataCabang.metodePembayaran.qris.count} transaksi`,
+        "Cash": `${dataCabang.metodePembayaran.cash.count} transaksi`
+      });
+      rows.push({
+        Cabang: 'Total per Metode:',
+        Barang: '',
+        Kategori: '',
+        "Harga Satuan": '',
+        "Total Terjual": '',
+        "Total Penjualan": '',
+        "QRIS": dataCabang.metodePembayaran.qris.total,
+        "Cash": dataCabang.metodePembayaran.cash.total
+      });
+
+      // Add empty row after payment summary
+      rows.push({
+        Cabang: '',
+        Barang: '',
+        Kategori: '',
+        "Harga Satuan": '',
+        "Total Terjual": '',
+        "Total Penjualan": '',
+        "QRIS": '',
+        "Cash": ''
+      });
+
+      // Add header row for items
+      rows.push({
+        Cabang: 'Cabang',
+        Barang: 'Nama Barang',
+        Kategori: 'Kategori',
+        "Harga Satuan": 'Harga Satuan',
+        "Total Terjual": 'Total Terjual',
+        "Total Penjualan": 'Total Penjualan',
+        "QRIS": '',
+        "Cash": ''
+      });
+
       // Add items for current branch
       Object.entries(dataCabang.barang).forEach(([namaBarang, barangData]) => {
         rows.push({
@@ -96,70 +162,91 @@ export const Invoice = () => {
           Kategori: barangData.kategori,
           "Harga Satuan": barangData.hargaSatuan,
           "Total Terjual": barangData.totalTerjual,
-          "Total Penjualan": barangData.totalPenjualan
+          "Total Penjualan": barangData.totalPenjualan,
+          "QRIS": '',
+          "Cash": ''
         });
       });
-  
+
+      // Add branch total
+      rows.push({
+        Cabang: `Total ${cabang}`,
+        Barang: '',
+        Kategori: '',
+        "Harga Satuan": '',
+        "Total Terjual": getTotalTerjual(dataCabang),
+        "Total Penjualan": getTotalPenjualan(dataCabang),
+        "QRIS": '',
+        "Cash": ''
+      });
+
       prevCabang = cabang;
     });
-  
-    // Add total for the last branch
-    if (prevCabang !== null) {
-      rows.push({
-        Cabang: '',
-        Barang: '',
-        Kategori: '',
-        "Harga Satuan": '',
-        "Total Terjual": '',
-        "Total Penjualan": ''
-      });
-      
-      rows.push({
-        Cabang: `Total ${prevCabang}`,
-        Barang: '',
-        Kategori: '',
-        "Harga Satuan": '',
-        "Total Terjual": getTotalTerjual(detailPenjualan[prevCabang]),
-        "Total Penjualan": getTotalPenjualan(detailPenjualan[prevCabang])
-      });
-    }
-  
-    // Add grand total at the end
+
+    // Add empty row before grand totals
     rows.push({
       Cabang: '',
       Barang: '',
       Kategori: '',
       "Harga Satuan": '',
       "Total Terjual": '',
-      "Total Penjualan": ''
+      "Total Penjualan": '',
+      "QRIS": '',
+      "Cash": ''
     });
-    
+
+    // Add grand totals section
     rows.push({
       Cabang: 'GRAND TOTAL',
       Barang: '',
       Kategori: '',
       "Harga Satuan": '',
       "Total Terjual": getGrandTotalTerjual(detailPenjualan),
-      "Total Penjualan": getGrandTotalPenjualan(detailPenjualan)
+      "Total Penjualan": getGrandTotalPenjualan(detailPenjualan),
+      "QRIS": '',
+      "Cash": ''
     });
-  
+
+    // Add payment method grand totals
+    rows.push({
+      Cabang: 'Total QRIS',
+      Barang: '',
+      Kategori: '',
+      "Harga Satuan": '',
+      "Total Terjual": '',
+      "Total Penjualan": '',
+      "QRIS": data.data.totalPembayaranQRIS,
+      "Cash": ''
+    });
+
+    rows.push({
+      Cabang: 'Total Cash',
+      Barang: '',
+      Kategori: '',
+      "Harga Satuan": '',
+      "Total Terjual": '',
+      "Total Penjualan": '',
+      "QRIS": '',
+      "Cash": data.data.totalPembayaranCash
+    });
+
     // Helper functions for calculating totals
     function getTotalTerjual(dataCabang) {
       return Object.values(dataCabang.barang).reduce((total, barang) => total + barang.totalTerjual, 0);
     }
-  
+
     function getTotalPenjualan(dataCabang) {
       return Object.values(dataCabang.barang).reduce((total, barang) => total + barang.totalPenjualan, 0);
     }
-  
+
     function getGrandTotalTerjual(data) {
       return Object.values(data).reduce((total, cabang) => total + getTotalTerjual(cabang), 0);
     }
-  
+
     function getGrandTotalPenjualan(data) {
       return Object.values(data).reduce((total, cabang) => total + getTotalPenjualan(cabang), 0);
     }
-  
+
     // Create and style the worksheet
     const worksheet = XLSX.utils.json_to_sheet(rows);
     
@@ -172,18 +259,18 @@ export const Invoice = () => {
       fill: { fgColor: { rgb: "CCCCCC" } }
     };
     
-    // Apply styles (Note: Basic XLSX doesn't support much styling, 
-    // you might need xlsx-style package for more styling options)
+    // Apply styles
     for (let C = range.s.c; C <= range.e.c; C++) {
       const address = XLSX.utils.encode_cell({ r: 0, c: C });
       if (!worksheet[address]) worksheet[address] = {};
       worksheet[address].s = headerStyle;
     }
-  
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Penjualan");
     XLSX.writeFile(workbook, `Laporan_Penjualan_${selectedMonth}.xlsx`);
   };
+
   const exportCabangToExcel = async () => {
     try {
       const response = await axios.get(`${getApiBaseUrl()}/export-laporan?month=${selectedMonth}`, {
@@ -225,6 +312,41 @@ export const Invoice = () => {
           Export Cabang ke Excel
         </Button>
       </Box> */}
+      {/* Summary Cards */}
+      <Box p={2}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <Paper sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
+                <Typography variant="h6" gutterBottom>
+                  Total Penjualan
+                </Typography>
+                <Typography variant="h4">
+                  {formatCurrency(totalPenjualanKeseluruhan)}
+                </Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Paper sx={{ p: 2, backgroundColor: '#e8f5e9' }}>
+                <Typography variant="h6" gutterBottom>
+                  Total QRIS
+                </Typography>
+                <Typography variant="h4">
+                  {formatCurrency(totalPembayaranQRIS)}
+                </Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Paper sx={{ p: 2, backgroundColor: '#fce4ec' }}>
+                <Typography variant="h6" gutterBottom>
+                  Total Cash
+                </Typography>
+                <Typography variant="h4">
+                  {formatCurrency(totalPembayaranCash)}
+                </Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+        </Box>
         {Object.keys(detailPenjualan).length > 0 ? (
           Object.entries(detailPenjualan).map(([cabang, dataCabang]) => (
             <Box key={cabang} mb={4}>

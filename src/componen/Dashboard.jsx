@@ -61,17 +61,23 @@ export const Dashboard = () => {
     fetchLaporanDetail();
   }, []);
   useEffect(() => {
-    if (data?.transaksi) {
-      const totalSuccess = data.transaksi.reduce((sum, trans) => 
-        sum + (trans.status_pembayaran === 'success' ? parseFloat(trans.totaljual) : 0), 0
-      );
+    if (data && Array.isArray(data.transaksi)) {
       const today = new Date();
       const todayString = today.toISOString().split('T')[0];
 
-      const todaySuccess = data.transaksi.reduce((sum, trans) => {
-        const isToday = trans.tanggal === todayString;
-        return sum + (isToday ? parseFloat(trans.totaljual) : 0);
-      }, 0);
+      const { totalSuccess, todaySuccess } = data.transaksi.reduce(
+        (acc, trans) => {
+          if (trans.status_pembayaran === 'settlement') {
+            acc.totalSuccess += parseFloat(trans.totaljual);
+
+            if (trans.tanggal === todayString) {
+              acc.todaySuccess += parseFloat(trans.totaljual);
+            }
+          }
+          return acc;
+        },
+        { totalSuccess: 0, todaySuccess: 0 }
+      );
 
       setTotalPenjualanSuccess(totalSuccess);
       setTodayPenjualanSuccess(todaySuccess);
@@ -249,7 +255,7 @@ export const Dashboard = () => {
     <Box sx={{ flexGrow: 1, p: 3, backgroundColor: '#f4f6f8', minHeight: '100vh' }}>
       {/* Header */}
       <Typography variant="h4" sx={{ mb: 3 }}>
-        Dashboard
+    
       </Typography>
 
       {/* Statistik */}

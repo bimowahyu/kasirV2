@@ -175,7 +175,7 @@ export const Product = () => {
 
   return (
     <Box sx={{ padding: 2, overflowX: "auto" }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h6" gutterBottom>
         <Typography>
         {user?.role === 'superadmin' && (
                <UploadProduk />
@@ -289,7 +289,7 @@ export const Product = () => {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 400,
+            width: 250,
             bgcolor: "background.paper",
             boxShadow: 24,
             p: 4,

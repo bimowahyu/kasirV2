@@ -49,7 +49,7 @@ export const Navbar = () => {
           {/* Search Icon */}
           <Tooltip title="Search">
             <IconButton>
-              <MagnifyingGlassIcon />
+              {/* <MagnifyingGlassIcon /> */}
             </IconButton>
           </Tooltip>
 
@@ -63,11 +63,11 @@ export const Navbar = () => {
             </Link>
             </Tooltip>
             <Tooltip title="Notifications">
-              <Badge badgeContent={4} color="success" variant="dot">
+              
                 <IconButton>
-                  <BellIcon />
+                  {/* <BellIcon /> */}
                 </IconButton>
-              </Badge>
+             
             </Tooltip>
             <Link to="/profile" style={{ textDecoration: 'none' }}>
             <Avatar

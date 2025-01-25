@@ -53,6 +53,14 @@ export const SetProdukCabang = () => {
     }
   }, [isAdmin, userInfo]);
 
+  const getAvailableProducts = () => {
+    if (!branchProducts || !selectedBranch) return products || [];
+    const existingProductIds = branchProducts
+      .filter((item) => item.cabanguuid === selectedBranch)
+      .map((item) => item.baranguuid);
+    return products?.filter((product) => !existingProductIds.includes(product.uuid)) || [];
+  };
+  
   const handleAddProduct = async () => {
     try {
       await axios.post(`${getApiBaseUrl()}/createbarangcabang`, {
@@ -71,7 +79,7 @@ export const SetProdukCabang = () => {
 
   return (
     <Box padding={3}>
-      <Typography variant="h4" marginBottom={2}>
+      <Typography variant="h6" marginBottom={2}>
         Kelola Produk Per Cabang
       </Typography>
       
@@ -98,7 +106,7 @@ export const SetProdukCabang = () => {
       >
         <Box
           sx={{
-            width: '400px',
+            width: '250px',
             bgcolor: 'background.paper',
             boxShadow: 24,
             p: 4,
@@ -108,20 +116,6 @@ export const SetProdukCabang = () => {
           <Typography variant="h6" marginBottom={2}>
             Tambah Produk ke Cabang
           </Typography>
-
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Barang</InputLabel>
-            <Select
-              value={selectedProduct}
-              onChange={(e) => setSelectedProduct(e.target.value)}
-            >
-              {products?.map((product) => (
-                <MenuItem key={product.uuid} value={product.uuid}>
-                  {product.namabarang}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
 
           <FormControl fullWidth margin="normal">
             <InputLabel>Cabang</InputLabel>
@@ -137,6 +131,22 @@ export const SetProdukCabang = () => {
               ))}
             </Select>
           </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Barang</InputLabel>
+            <Select
+              value={selectedProduct}
+              onChange={(e) => setSelectedProduct(e.target.value)}
+            >
+              {getAvailableProducts().map((product) => (
+                <MenuItem key={product.uuid} value={product.uuid}>
+                  {product.namabarang}
+                </MenuItem>
+              ))}
+            </Select>
+
+          </FormControl>
+
+          
 
           <Box marginTop={3} display="flex" gap={2}>
             <Button

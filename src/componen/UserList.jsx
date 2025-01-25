@@ -205,7 +205,7 @@ function UserList() {
             transform: "translate(-50%, -50%)",
             width: {
               xs: "90%",
-              sm: "400px"
+              sm: "250px"
             },
             maxHeight: {
               xs: "90vh", // Maximum height on mobile

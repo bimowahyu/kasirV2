@@ -167,6 +167,14 @@ export const Transaction = ({ userRole }) => {
       }
     }
   };
+  const handleRowClick = (event, transaction) => {
+    // Prevent row click if clicking on the action buttons
+    if (event.target.closest('button')) {
+      return;
+    }
+    setSelectedTransaction(transaction);
+    setModalOpen(true);
+  };
   
   return (
     <Box sx={{ overflowX: 'auto' }}>
@@ -232,7 +240,7 @@ export const Transaction = ({ userRole }) => {
                   <TableRow 
                     hover 
                     key={transaction.uuid}
-                    onClick={() => handleTransactionClick(transaction)}
+                    onClick={(e) => handleRowClick(e, transaction)}
                     sx={{ cursor: 'pointer' }}
                   >
                     <TableCell>{transaction.uuid}</TableCell>

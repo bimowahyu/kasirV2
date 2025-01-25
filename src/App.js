@@ -17,7 +17,7 @@ import { PrivateRoute } from './PrivateRoute';
 import { InvoicePages } from './pages/InvoicePages';
 import { ProdukPerCabangPages } from './pages/ProductPerCabangPages';//view transaksi kasir
 import SetProdukCabangPages from './pages/SetProdukCabangPages';
-import Product from './componen/kasir/transaksi/Produc';
+//import Product from './componen/kasir/transaksi/Produc';
 import { Me } from './fitur/AuthSlice';
 
 function App() {
@@ -57,7 +57,7 @@ function App() {
            <Route path="/produkpercabang" element={<ProdukPerCabangPages />} /> 
           {/* view transaksi kasir */}
            {/* view transaksi kasir */}
-           <Route path="/produktransaksi" element={<Product />} /> 
+           {/* <Route path="/produktransaksi" element={<Product />} />  */}
           {/* view transaksi kasir */}
         </Routes>
       </BrowserRouter>

@@ -788,91 +788,96 @@ return (
 
       {/* Filters */}
       <Box 
+  sx={{ 
+    display: 'flex', 
+    flexDirection: { xs: 'column', sm: 'row' }, 
+    gap: 2, 
+    backgroundColor: 'white', 
+    p: 2, 
+    borderRadius: 2, 
+    boxShadow: 1 
+  }}
+>
+  <FormControl 
+    size="small" 
+    sx={{ 
+      width: { xs: '100%', sm: 200 }, 
+      mb: { xs: 2, sm: 0 }
+    }}
+  >
+    <Select
+      value={selectedCategory}
+      onChange={(e) => setSelectedCategory(e.target.value)}
+      displayEmpty
+      sx={{ 
+        borderRadius: 2, 
+        width: '100%',
+        '& .MuiSelect-select': { 
+          py: 1.5 
+        } 
+      }}
+    >
+      <MenuItem value="">All Categories</MenuItem>
+      {categories.map((category) => (
+        <MenuItem 
+          key={category.uuid} 
+          value={category.namakategori}
+        >
+          {category.namakategori}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+
+  {/* Search Section */}
+  <Box sx={{ flex: 1, width: '100%' }}>
+    {showSearch ? (
+      <Box 
         sx={{ 
           display: 'flex', 
-          gap: 2, 
-          backgroundColor: 'white', 
-          p: 2, 
+          alignItems: 'center', 
+          border: '1px solid', 
+          borderColor: 'divider', 
           borderRadius: 2, 
-          boxShadow: 1 
+          px: 2,
+          width: '100%'
         }}
       >
-        <FormControl 
-          size="small" 
+        <InputBase
+          placeholder="Search products"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           sx={{ 
-            minWidth: { xs: '100%', sm: 200 }, 
-            flex: 1 
+            flex: 1, 
+            py: 1,
+            width: '100%'
           }}
+          startAdornment={<SearchIcon sx={{ mr: 2, color: 'text.secondary' }} />}
+        />
+        <IconButton 
+          size="small" 
+          onClick={() => setShowSearch(false)}
         >
-          <Select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            displayEmpty
-            sx={{ 
-              borderRadius: 2, 
-              '& .MuiSelect-select': { 
-                py: 1.5 
-              } 
-            }}
-          >
-            <MenuItem value="">All Categories</MenuItem>
-            {categories.map((category) => (
-              <MenuItem 
-                key={category.uuid} 
-                value={category.namakategori}
-              >
-                {category.namakategori}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        {/* Search Section */}
-        <Box sx={{ flex: 2 }}>
-          {showSearch ? (
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                border: '1px solid', 
-                borderColor: 'divider', 
-                borderRadius: 2, 
-                px: 2 
-              }}
-            >
-              <InputBase
-                placeholder="Search products"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                sx={{ 
-                  flex: 1, 
-                  py: 1 
-                }}
-                startAdornment={<SearchIcon sx={{ mr: 2, color: 'text.secondary' }} />}
-              />
-              <IconButton 
-                size="small" 
-                onClick={() => setShowSearch(false)}
-              >
-                <CloseIcon />
-              </IconButton>
-            </Box>
-          ) : (
-            <Button
-              variant="outlined"
-              fullWidth
-              onClick={() => setShowSearch(true)}
-              startIcon={<SearchIcon />}
-              sx={{ 
-                borderRadius: 2, 
-                py: 1.5 
-              }}
-            >
-              Search Products
-            </Button>
-          )}
-        </Box>
+          <CloseIcon />
+        </IconButton>
       </Box>
+    ) : (
+      <Button
+        variant="outlined"
+        fullWidth
+        onClick={() => setShowSearch(true)}
+        startIcon={<SearchIcon />}
+        sx={{ 
+          borderRadius: 2, 
+          py: 1.5,
+          width: '100%'
+        }}
+      >
+        Search Products
+      </Button>
+    )}
+  </Box>
+</Box>
 
       {/* Product Grid */}
       <Box 

@@ -154,7 +154,7 @@ export const Product = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${getApiBaseUrl()}/barang/${id}`, {
+      await axios.delete(`${getApiBaseUrl()}/deletebarang/${id}`, {
         withCredentials: true,
       });
       mutate();
@@ -162,13 +162,10 @@ export const Product = () => {
       console.error("Error deleting product:", error);
     }
   };
-
-  // Loading and error states
   if (productError) return <Typography color="error">Failed to load data: {productError.message}</Typography>;
   if (categoryError) return <Typography color="error">Failed to load categories: {categoryError.message}</Typography>;
   if (!products || !categories) return <Typography>Loading...</Typography>;
 
-  // Debug logs
   console.log('Current products:', products);
   console.log('Current filter:', filters.kategori);
   console.log('Filtered products:', filteredProducts);

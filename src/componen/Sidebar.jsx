@@ -8,12 +8,40 @@ import { useDispatch, useSelector } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
 import { LogoutOutlined } from '@mui/icons-material';
 import { Logout, reset } from '../fitur/AuthSlice';
+import {
+Dialog,
+DialogTitle,
+DialogContent,
+DialogContentText,
+DialogActions,
+} from '@mui/material';
 // import Button from '@mui/material/Button';
+import Button from "@mui/material/Button";
 
 export const Sidebar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+
+  const handleLogoutClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setOpenConfirmDialog(true);
+  };
+
+  const handleConfirmLogout = () => {
+    dispatch(Logout());
+    dispatch(reset());
+    navigate("/");
+    setOpenConfirmDialog(false);
+  };
+
+  const handleCancelLogout = () => {
+    setOpenConfirmDialog(false);
+  };
 
   const logout = () => {
     dispatch(Logout());
@@ -37,6 +65,35 @@ export const Sidebar = () => {
         
       }}
     >
+      <Dialog
+      open={openConfirmDialog}
+      onClose={handleCancelLogout}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">
+        Konfirmasi Logout
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          Apakah Anda yakin ingin keluar dari sistem?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleCancelLogout} color="primary">
+          Batal
+        </Button>
+        <Button 
+          onClick={handleConfirmLogout} 
+          color="error"
+          autoFocus
+          startIcon={<LogoutOutlined />}
+        >
+          Ya, Logout
+        </Button>
+      </DialogActions>
+    </Dialog>
+
       {/* Logo Section */}
       <Box
         sx={{
@@ -173,7 +230,7 @@ export const Sidebar = () => {
             Invoice
             </Typography>
 
-            <Typography
+            {/* <Typography
             component={NavLink}
             onClick={logout}
 
@@ -189,7 +246,29 @@ export const Sidebar = () => {
             >
             <LogoutOutlined /> Log Out
            
-            </Typography>
+            </Typography> */}
+             <Button
+          onClick={handleLogoutClick}
+          sx={{
+            width: "90%",
+            justifyContent: "flex-start",
+            color: "#cbd5e1",
+            p: 2,
+            borderRadius: 1,
+            textTransform: "none",
+            transition: "all 0.3s ease",
+           "&:hover": {
+              bgcolor: "#EF4444",
+              color: "white",
+              transform: "scale(1.05)", 
+            },
+            minHeight: "48px",
+            touchAction: "manipulation",
+          }}
+          startIcon={<LogoutOutlined />}
+        >
+          Log Out
+        </Button>
       </Stack>
 
       {/* Divider */}

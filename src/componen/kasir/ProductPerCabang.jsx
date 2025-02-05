@@ -763,8 +763,8 @@ return (
         <AppBar 
           position="static" 
           color="default" 
-          elevation={2} 
-          sx={{ borderRadius: 2 }}
+          elevation={0}
+          sx={{ borderRadius: 2, backgroundColor: 'transparent' }}
         >
           <Toolbar>
             <Typography 
@@ -879,97 +879,83 @@ return (
   </Box>
 </Box>
 
-      {/* Product Grid */}
-      <Box 
-        sx={{ 
-          overflowY: 'auto', 
-          pr: 1, 
-          '&::-webkit-scrollbar': { 
-            width: 8 
-          },
-          '&::-webkit-scrollbar-thumb': { 
-            backgroundColor: 'rgba(0,0,0,0.2)', 
-            borderRadius: 4 
-          }
-        }}
-      >
-        <Grid 
-          container 
-          spacing={2}
-        >
-          {filteredProducts.map((product) => (
-            <Grid item xs={12} sm={6} md={4} key={product.uuid}>
-              <Card 
-                sx={{ 
-                  height: '100%', 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  borderRadius: 3, 
-                  transition: 'transform 0.3s',
-                  '&:hover': { 
-                    transform: 'scale(1.02)',
-                    boxShadow: 3 
-                  }
-                }}
-              >
+       {/* Product Grid */}
+       <Box sx={{ overflowY: "auto", p: 2 }}>
+      <Grid container spacing={2}>
+        {filteredProducts.map((product) => (
+          <Grid item xs={6} sm={4} md={3} key={product.uuid}>
+            <Card sx={{ display: "flex", flexDirection: "column", borderRadius: 2, boxShadow: 3 }}>
+              <Box sx={{ position: "relative", pt: "100%", backgroundColor: "white" }}>
                 <CardMedia
                   component="img"
                   image={`${getApiBaseUrl()}/uploads/${product?.Barang?.foto || product?.foto}`}
                   alt={product?.Barang?.namabarang}
-                  sx={{ 
-                    height: 180, 
-                    objectFit: 'cover' 
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: "12px 12px 0 0",
                   }}
                 />
-                <CardContent sx={{ flexGrow: 1, p: 2 }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      fontWeight: 'bold', 
-                      mb: 1, 
-                      fontSize: '1rem' 
-                    }}
-                  >
-                    {product?.Barang?.namabarang}
-                  </Typography>
-                  <Typography 
-                    color="primary" 
-                    sx={{ 
-                      fontWeight: 'bold', 
-                      mb: 1, 
-                      fontSize: '0.9rem' 
-                    }}
-                  >
-                    Rp {parseFloat(product?.Barang?.harga).toLocaleString("id-ID")}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary"
-                  >
-                    {product?.Barang?.Kategori?.namakategori}
-                  </Typography>
-                </CardContent>
-                <Button
-                  variant="contained"
-                  fullWidth
-                  sx={{ 
-                    py: 1.5,
-                    borderRadius: '0 0 12px 12px',
-                    backgroundColor: 'primary.main',
-                    transition: 'background-color 0.3s',
-                    '&:hover': { 
-                      backgroundColor: 'primary.dark' 
-                    }
+              </Box>
+              <CardContent sx={{ p: 2, textAlign: "center", flexGrow: 1 }}>
+              <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 'bold', 
+                mb: 1, 
+                fontSize: '1rem' 
+              }}
+            >
+              {product?.Barang?.namabarang}
+            </Typography>
+              <Typography 
+              color="primary" 
+              sx={{ 
+                fontWeight: 'bold', 
+                mb: 1, 
+                fontSize: '0.9rem' 
+              }}
+            >
+              Rp {parseFloat(product?.Barang?.harga).toLocaleString("id-ID")}
+            </Typography>
+                <Typography
+                  sx={{
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                    color: "text.primary",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
                   }}
-                  onClick={() => addToOrder(product)}
                 >
-                  Add to Order
-                </Button>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
+                  {product?.Barang?.Kategori?.namakategori}
+                </Typography>
+              </CardContent>
+              <Button
+                variant="contained"
+                fullWidth
+                sx={{
+                  py: 1.5,
+                  borderRadius: "0 0 12px 12px",
+                  backgroundColor: "primary.main",
+                  transition: "background-color 0.3s",
+                  "&:hover": { backgroundColor: "primary.dark" },
+                }}
+                onClick={() => addToOrder(product)}
+              >
+                Add to Order
+              </Button>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
     </Box>
 
     {/* Orders Section */}

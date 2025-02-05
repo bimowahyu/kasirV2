@@ -9,11 +9,18 @@ import {
   ListItem,
   ListItemText,
   useMediaQuery,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { NavLink, useNavigate } from "react-router-dom";
 import { Logout, reset } from '../../fitur/AuthSlice';
 import { useDispatch, useSelector } from "react-redux";
+import Button from "@mui/material/Button";
+import { LogoutOutlined } from "@mui/icons-material";
 
 
 const Header = () => {
@@ -22,12 +29,33 @@ const Header = () => {
   const isMobile = useMediaQuery('(max-width:768px)');
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
-  const logout = () => {
+  const handleLogoutClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setOpenConfirmDialog(true);
+  };
+
+  const handleConfirmLogout = () => {
     dispatch(Logout());
     dispatch(reset());
     navigate("/");
+    setOpenConfirmDialog(false);
   };
+
+  const handleCancelLogout = () => {
+    setOpenConfirmDialog(false);
+  };
+
+
+  // const logout = () => {
+  //   dispatch(Logout());
+  //   dispatch(reset());
+  //   navigate("/");
+  // };
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
@@ -47,6 +75,34 @@ const Header = () => {
     )}
   </Toolbar>
 </AppBar>
+<Dialog
+      open={openConfirmDialog}
+      onClose={handleCancelLogout}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">
+        Konfirmasi Logout
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          Apakah Anda yakin ingin keluar dari sistem?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleCancelLogout} color="primary">
+          Batal
+        </Button>
+        <Button 
+          onClick={handleConfirmLogout} 
+          color="error"
+          autoFocus
+          startIcon={<LogoutOutlined />}
+        >
+          Ya, Logout
+        </Button>
+      </DialogActions>
+    </Dialog>
 
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
         <List style={{ width: 250 }}>
@@ -74,14 +130,28 @@ const Header = () => {
           >
             <ListItemText primary="Profile" />
           </ListItem>
-          <ListItem 
-            button
-            component={NavLink}
-            onClick={logout}
-            to="/"
-          >
-            <ListItemText primary="Log Out" />
-          </ListItem>
+          <Button
+          onClick={handleLogoutClick}
+          sx={{
+            width: "90%",
+            justifyContent: "flex-start",
+            color: "#27667B",
+            p: 2,
+            borderRadius: 1,
+            textTransform: "none",
+            transition: "all 0.3s ease",
+           "&:hover": {
+              bgcolor: "#EF4444",
+              color: "white",
+              transform: "scale(1.05)", 
+            },
+            minHeight: "48px",
+            touchAction: "manipulation",
+          }}
+          startIcon={<LogoutOutlined />}
+        >
+          Log Out
+        </Button>
         </List>
       </Drawer>
     </>

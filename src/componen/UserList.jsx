@@ -124,6 +124,7 @@ function UserList() {
           justifyContent: "flex-end",
           overflowX: 'auto',
         }}>
+          <Box>
           <Button
             variant="contained"
             color="primary"
@@ -131,6 +132,7 @@ function UserList() {
           >
             Add User
           </Button>
+          </Box>
         </Box>
 
         {/* Responsive Table Container */}
@@ -198,25 +200,18 @@ function UserList() {
 
         {/* Modal */}
         <Modal open={openModal} onClose={handleCloseModal}>
-          <Box sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: {
-              xs: "90%",
-              sm: "250px"
-            },
-            maxHeight: {
-              xs: "90vh", // Maximum height on mobile
-              sm: "80vh"  // Maximum height on tablet and up
-            },
-            //overflow: "auto",
-            bgcolor: "background.paper",
-            boxShadow: 24,
-            p: { xs: 0, sm: 4 }, // Responsive padding
-            borderRadius: 2,
-          }}>
+         <Box
+                   sx={{
+                     position: "absolute",
+                     top: "50%",
+                     left: "50%",
+                     transform: "translate(-50%, -50%)",
+                     width: 250,
+                     bgcolor: "background.paper",
+                     boxShadow: 24,
+                     p: 4,
+                   }}
+                 >
             <Typography variant="h6" mb={2}>
               {isEditing ? "Edit User" : "Add New User"}
             </Typography>

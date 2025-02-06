@@ -95,10 +95,33 @@ export const Navbar = () => {
             width: '100%',
             height: '100%',
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            animation: 'fadeIn 0.3s ease',
+            '@keyframes fadeIn': {
+              from: { opacity: 0 },
+              to: { opacity: 1 }
+            }
           }}
           onClick={toggleDrawer}
         >
-          <Sidebar />
+          <Box
+            sx={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: { xs: 200, lg: 250 },
+              height: '100vh',
+              '@keyframes slideIn': {
+                from: { transform: 'translateX(-100%)' },
+                to: { transform: 'translateX(0)' }
+              },
+              animation: {
+                xs: 'slideIn 0.3s ease',
+                lg: 'none'
+              }
+            }}
+          >
+            <Sidebar />
+            </Box>
         </Box>
       )}
     </React.Fragment>

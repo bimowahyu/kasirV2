@@ -16,6 +16,7 @@ import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
+import {TableContainer} from '@mui/material'
 import dayjs from 'dayjs';
 import useSWR from 'swr';
 import axios from 'axios';
@@ -354,33 +355,36 @@ export const Transaction = ({ userRole }) => {
                   Items
                 </Typography>
                 <Paper sx={{ p: 2 }}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Name</TableCell>
-                        <TableCell>Quantity</TableCell>
-                        <TableCell>Price</TableCell>
-                        <TableCell>Total</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {selectedTransaction.TransaksiDetails.map((item) => (
-                        <TableRow key={item.uuid}>
-                          <TableCell>{item.Barang?.namabarang || 'NA'}</TableCell>
-                          <TableCell>{item.jumlahbarang}</TableCell>
-                          <TableCell>{new Intl.NumberFormat('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR'
-                          }).format(item.harga)}</TableCell>
-                          <TableCell>{new Intl.NumberFormat('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR'
-                          }).format(item.total)}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </Paper>
+  <TableContainer sx={{ maxHeight: 400, overflow: 'auto' }}>
+    <Table size="small" stickyHeader>
+      <TableHead>
+        <TableRow>
+          <TableCell>Name</TableCell>
+          <TableCell>Quantity</TableCell>
+          <TableCell>Price</TableCell>
+          <TableCell>Total</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {selectedTransaction.TransaksiDetails.map((item) => (
+          <TableRow key={item.uuid}>
+            <TableCell>{item.Barang?.namabarang || 'NA'}</TableCell>
+            <TableCell>{item.jumlahbarang}</TableCell>
+            <TableCell>{new Intl.NumberFormat('id-ID', {
+              style: 'currency',
+              currency: 'IDR'
+            }).format(item.harga)}</TableCell>
+            <TableCell>{new Intl.NumberFormat('id-ID', {
+              style: 'currency',
+              currency: 'IDR'
+            }).format(item.total)}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </TableContainer>
+</Paper>
+
               </Box>
 
               <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>

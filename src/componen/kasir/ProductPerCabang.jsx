@@ -45,6 +45,7 @@ import Swal from "sweetalert2";
 import { useDispatch, useSelector } from 'react-redux';
 import { Me } from '../../fitur/AuthSlice';
 import { useNavigate } from 'react-router-dom';
+import useSWR from 'swr';
 
 const getApiBaseUrl = () => {
   const protocol = window.location.protocol === "https:" ? "https" : "http";
@@ -168,7 +169,6 @@ const ProductPerCabang = () => {
   };
  
  // console.log("Receipt Data:", receiptData);
-  
  const processCashPayment = async (total) => {
   if (!customerCash || parseFloat(customerCash) < total) {
     Swal.fire("Uang tidak mencukupi", "Silakan masukkan jumlah yang benar", "error");
@@ -179,7 +179,7 @@ const ProductPerCabang = () => {
 
   try {
     // Kirim data transaksi ke server
-    await axios.post(`${getApiBaseUrl()}/createtransaksi`, {
+    await axios.post(`${getApiBaseUrl()}/createtransaksicabang`, {
       pembayaran: "cash",
       items: orders.map((order) => ({
         baranguuid: order.id,
@@ -202,6 +202,9 @@ const ProductPerCabang = () => {
       })),
     });
 
+    // Update local product stock
+    updateProductStock(orders);
+
     // Tampilkan sukses transaksi
     Swal.fire({
       title: "Pembayaran Berhasil",
@@ -219,7 +222,6 @@ const ProductPerCabang = () => {
     Swal.fire("Terjadi kesalahan", "Gagal menyimpan transaksi", "error");
   }
 };
-
   
   const renderQRCode = (qrString) => {
     return `<div id="qrcode-container" style="background: white; padding: 16px; border-radius: 8px; display: inline-block;"></div>`;
@@ -346,17 +348,20 @@ const ProductPerCabang = () => {
         showCloseButton: true,
       });
       startPaymentStatusPolling(orderId, () => {
+        // Update product stock after successful QRIS payment
+        updateProductStock(orders);
+        
         setReceiptData({
           total,
           paymentMethod: "Qris",
           customerName,
-    items: orders.map((order) => ({
-      id: order.id,
-      name: order.name,
-      price: order.price,
-      quantity: order.quantity,
-    })),
-  });
+          items: orders.map((order) => ({
+            id: order.id,
+            name: order.name,
+            price: order.price,
+            quantity: order.quantity,
+          })),
+        });
         setReceiptDialogOpen(true);
         setOrders([]); 
       });
@@ -365,7 +370,22 @@ const ProductPerCabang = () => {
       Swal.fire("Terjadi kesalahan", "Gagal memproses pembayaran QRIS", "error");
     }
   };
- 
+  const updateProductStock = (orderItems) => {
+    setProducts(prevProducts => {
+      return prevProducts.map(product => {
+        const orderItem = orderItems.find(order => order.id === product.baranguuid);
+        
+        if (orderItem) {
+          const newStock = parseInt(product.stok) - orderItem.quantity;
+          return {
+            ...product,
+            stok: Math.max(0, newStock).toString()
+          };
+        }
+        return product;
+      });
+    });
+  };
   useEffect(() => {
     dispatch(Me());
   }, [dispatch]);
@@ -388,7 +408,7 @@ const ProductPerCabang = () => {
             text: "Terima kasih atas pembayaran Anda.",
             icon: "success",
           });
-          if (onSuccess) onSuccess();
+          if (onSuccess) onSuccess(); // This will call updateProductStock
         } else if (status === "expire" || status === "cancel") {
           clearInterval(pollInterval);
           Swal.fire({
@@ -402,7 +422,6 @@ const ProductPerCabang = () => {
       }
     }, 5000); 
   
-
     setTimeout(() => clearInterval(pollInterval), 300000);
   };
   const ReceiptDialog = () => {
@@ -879,84 +898,117 @@ return (
   </Box>
 </Box>
 
-       {/* Product Grid */}
-       <Box sx={{ overflowY: "auto", p: 2 }}>
-      <Grid container spacing={2}>
-        {filteredProducts.map((product) => (
-          <Grid item xs={6} sm={4} md={3} key={product.uuid}>
-            <Card sx={{ display: "flex", flexDirection: "column", borderRadius: 2, boxShadow: 3 }}>
-              <Box sx={{ position: "relative", pt: "100%", backgroundColor: "white" }}>
-                <CardMedia
-                  component="img"
-                  image={`${getApiBaseUrl()}/uploads/${product?.Barang?.foto || product?.foto}`}
-                  alt={product?.Barang?.namabarang}
-                  sx={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    borderRadius: "12px 12px 0 0",
-                  }}
-                />
-              </Box>
-              <CardContent sx={{ p: 2, textAlign: "center", flexGrow: 1 }}>
-              <Typography 
-              variant="h6" 
-              sx={{ 
-                fontWeight: 'bold', 
-                mb: 1, 
-                fontSize: '1rem' 
+      {/* Product Grid */}
+<Box sx={{ overflowY: "auto", p: 2 }}>
+  <Grid container spacing={2}>
+    {filteredProducts.map((product) => (
+      <Grid item xs={6} sm={4} md={3} key={product.uuid}>
+        <Card sx={{ 
+          display: "flex", 
+          flexDirection: "column", 
+          borderRadius: 2, 
+          boxShadow: 3,
+          height: '100%',
+          width: '100%',
+          maxWidth: 280,
+          margin: '0 auto'
+        }}>
+          <Box sx={{ position: "relative", pt: "75%", backgroundColor: "white" }}>
+            <CardMedia
+              component="img"
+              image={`${getApiBaseUrl()}/uploads/${product?.Barang?.foto || product?.foto}`}
+              alt={product?.Barang?.namabarang}
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: "12px 12px 0 0",
               }}
-            >
-              {product?.Barang?.namabarang}
-            </Typography>
+            />
+          </Box>
+          <CardContent sx={{ p: 2, textAlign: "center", flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Box>
               <Typography 
-              color="primary" 
-              sx={{ 
-                fontWeight: 'bold', 
-                mb: 1, 
-                fontSize: '0.9rem' 
-              }}
-            >
-              Rp {parseFloat(product?.Barang?.harga).toLocaleString("id-ID")}
-            </Typography>
-                <Typography
-                  sx={{
-                    fontSize: "0.875rem",
-                    fontWeight: 500,
-                    color: "text.primary",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                  }}
-                >
-                  {product?.Barang?.Kategori?.namakategori}
-                </Typography>
-              </CardContent>
-              <Button
-                variant="contained"
-                fullWidth
-                sx={{
-                  py: 1.5,
-                  borderRadius: "0 0 12px 12px",
-                  backgroundColor: "primary.main",
-                  transition: "background-color 0.3s",
-                  "&:hover": { backgroundColor: "primary.dark" },
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  mb: 1, 
+                  fontSize: '1rem',
+                  height: '2.5rem',
+                  overflow: 'hidden',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  textOverflow: 'ellipsis'
                 }}
-                onClick={() => addToOrder(product)}
               >
-                Add to Order
-              </Button>
-            </Card>
-          </Grid>
-        ))}
+                {product?.Barang?.namabarang}
+              </Typography>
+              <Typography 
+                color="primary" 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  mb: 1, 
+                  fontSize: '0.9rem' 
+                }}
+              >
+                Rp {parseFloat(product?.Barang?.harga).toLocaleString("id-ID")}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography
+                sx={{
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  color: "text.primary",
+                  mb: 0.5
+                }}
+              >
+                {product?.Barang?.Kategori?.namakategori}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  color: parseInt(product?.stok) === 0 ? "error.main" : "text.primary",
+                  mb: 1
+                }}
+              >
+                Stok tersedia: {product?.stok}
+              </Typography>
+            </Box>
+          </CardContent>
+          <Button
+            variant="contained"
+            fullWidth
+            disabled={parseInt(product?.stok) === 0}
+            sx={{
+              py: 1.5,
+              borderRadius: "0 0 12px 12px",
+              backgroundColor: parseInt(product?.stok) === 0 ? "grey.400" : "primary.main",
+              color: parseInt(product?.stok) === 0 ? "text.secondary" : "white",
+              transition: "background-color 0.3s",
+              "&:hover": { 
+                backgroundColor: parseInt(product?.stok) === 0 ? "grey.400" : "primary.dark" 
+              },
+              "&.Mui-disabled": {
+                backgroundColor: "grey.300",
+                color: "text.secondary"
+              }
+            }}
+            onClick={() => addToOrder(product)}
+          >
+            {parseInt(product?.stok) === 0 ? "Out of Stock" : "Add to Order"}
+          </Button>
+        </Card>
       </Grid>
-    </Box>
-    </Box>
+    ))}
+  </Grid>
+</Box>
+</Box>
 
     {/* Orders Section */}
     {!isMobile ? (

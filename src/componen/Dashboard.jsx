@@ -13,6 +13,8 @@ import {
 import '../componen/css/Dashboard.css';
 import axios from 'axios';
 import useSWR from 'swr';
+import ChartComponent from './Chart';
+import MonitorStock from './MonitorStock';
 
 ChartJS.register(CategoryScale, LinearScale, ArcElement, BarElement, Tooltip, Legend);
 
@@ -60,27 +62,51 @@ export const Dashboard = () => {
     fetchCabangData();
     fetchLaporanDetail();
   }, []);
+  // useEffect(() => {
+  //   if (data && Array.isArray(data.transaksi)) {
+  //     const today = new Date();
+  //     const todayString = today.toISOString().split('T')[0];
+
+  //     const { totalSuccess, todaySuccess } = data.transaksi.reduce(
+  //       (acc, trans) => {
+  //         if (trans.status_pembayaran === 'settlement') {
+  //           acc.totalSuccess += parseFloat(trans.totaljual);
+
+  //           if (trans.tanggal === todayString) {
+  //             acc.todaySuccess += parseFloat(trans.totaljual);
+  //           }
+  //         }
+  //         return acc;
+  //       },
+  //       { totalSuccess: 0, todaySuccess: 0 }
+  //     );
+
+  //     setTotalPenjualanSuccess(totalSuccess);
+  //     setTodayPenjualanSuccess(todaySuccess);
+  //   }
+  // }, [data]);
   useEffect(() => {
     if (data && Array.isArray(data.transaksi)) {
+      // Get today's date (local timezone)
       const today = new Date();
-      const todayString = today.toISOString().split('T')[0];
-
-      const { totalSuccess, todaySuccess } = data.transaksi.reduce(
-        (acc, trans) => {
-          if (trans.status_pembayaran === 'settlement') {
-            acc.totalSuccess += parseFloat(trans.totaljual);
-
-            if (trans.tanggal === todayString) {
-              acc.todaySuccess += parseFloat(trans.totaljual);
-            }
-          }
-          return acc;
-        },
-        { totalSuccess: 0, todaySuccess: 0 }
-      );
-
-      setTotalPenjualanSuccess(totalSuccess);
-      setTodayPenjualanSuccess(todaySuccess);
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const todayDateString = `${year}-${month}-${day}`;
+      
+      console.log("Today's date string:", todayDateString);
+      
+      // Calculate today's sales
+      const todaySales = data.transaksi.reduce((total, trans) => {
+        if (trans.status_pembayaran === 'settlement' && trans.tanggal === todayDateString) {
+          console.log(`Found today's transaction: ${trans.order_id}, Amount: ${trans.totaljual}`);
+          return total + parseFloat(trans.totaljual);
+        }
+        return total;
+      }, 0);
+      
+      console.log("Final today's sales calculation:", todaySales);
+      setTodayPenjualanSuccess(todaySales);
     }
   }, [data]);
   const fetchCabangData = async () => {
@@ -322,7 +348,7 @@ export const Dashboard = () => {
         </Grid>
       </Grid>
 
-      {/* Chart Section */}
+          {/* Chart Section */}
       <Grid container spacing={3} sx={{ mt: 3 }}>
         <Grid item xs={12} md={8}>
           <Card>
@@ -375,6 +401,8 @@ export const Dashboard = () => {
                   }}
                 />
               </div>
+              <ChartComponent />
+              <MonitorStock />
             </CardContent>
           </Card>
         </Grid>
@@ -394,6 +422,7 @@ export const Dashboard = () => {
     </CardContent>
   </Card>
 </Grid>
+
 
 
       </Grid>

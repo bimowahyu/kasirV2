@@ -163,6 +163,7 @@ function UserList() {
           }}>
             <TableHead>
               <TableRow>
+              <TableCell sx={{ whiteSpace: 'nowrap' }}>No</TableCell>
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>Username</TableCell>
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>Role</TableCell>
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>Cabang</TableCell>
@@ -170,8 +171,9 @@ function UserList() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map((user) => (
+              {users.map((user, index) => (
                 <TableRow key={user.uuid}>
+                  <TableCell sx={{ whiteSpace: 'nowrap' }}>{index + 1}</TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{user.username}</TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{user.role}</TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{user.Cabang?.namacabang || "N/A"}</TableCell>

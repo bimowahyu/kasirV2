@@ -17,7 +17,18 @@ import { PrivateRoute } from './PrivateRoute';
 import { InvoicePages } from './pages/InvoicePages';
 import { ProdukPerCabangPages } from './pages/ProductPerCabangPages';//view transaksi kasir
 import SetProdukCabangPages from './pages/SetProdukCabangPages';
+import { WearhousePages } from './pages/WearhousePages';
+import { ConfirmPages } from './pages/ConfirmPages';
+import { SendProductPages } from './pages/SendProductPages';
+import { StockCabangPages } from './pages/StockCabangPages';
+import { StockAllBranchPages } from './pages/StockAllBrancPages';
+import { KomprehensifPages } from './pages/invoicePages/KomprehensifPages';
+import { PenjualanPerkategoriPages } from './pages/invoicePages/PenjualanPerkategoriPages';
+import { StockPerCabangPages } from './pages/invoicePages/StockPerCabangPages';
+import { CreateJurnalPages } from './pages/jurnalPages/CreateJurnalPages';
+import { GetJurnalPages } from './pages/jurnalPages/GetJurnalPages';
 //import Product from './componen/kasir/transaksi/Produc';
+import { MutasiPages } from './pages/MutasiPages';
 import { Me } from './fitur/AuthSlice';
 
 function App() {
@@ -41,6 +52,18 @@ function App() {
           <Route path="/category" element={<CategoryPages />} />
           <Route path="/laporan" element={<InvoicePages />} />
           <Route path="/setprodukpercabang" element={<SetProdukCabangPages />} />
+          <Route path="/wearhouse" element={<WearhousePages />} />
+          <Route path="/send" element={<SendProductPages />} />
+          <Route path="/stockallbranch" element={<StockAllBranchPages />} />
+          <Route path="/mutasi" element={<MutasiPages />} />
+          <Route path="/komprehensif" element={<KomprehensifPages />} />
+          <Route path="/penjualankategori" element={<PenjualanPerkategoriPages />} />
+          <Route path="/stockpages" element={<StockPerCabangPages />} />
+          <Route path="/createjurnal" element={<CreateJurnalPages />} />
+          <Route path="/getjurnal" element={<GetJurnalPages />} />
+
+          <Route path="/stockcabang" element={<StockCabangPages />} />  
+          <Route path="/confirm" element={<ConfirmPages />} />
           {/*batas API ADMIN */}
           <Route path="/profilekasir" element={<ProfileKasirPages />} />
           <Route

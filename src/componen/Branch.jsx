@@ -117,7 +117,7 @@ export const Branch = () => {
 
   return (
     <Box sx={{ padding: 2 }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h6" gutterBottom>
         Manajemen Cabang
       </Typography>
       <Button variant="contained" color="primary" onClick={() => handleOpenModal()}>
@@ -127,6 +127,7 @@ export const Branch = () => {
         <Table>
           <TableHead>
             <TableRow>
+            <TableCell>No</TableCell>
               <TableCell>Nama Cabang</TableCell>
               <TableCell>Alamat</TableCell>
               <TableCell>Koordinat</TableCell>
@@ -134,31 +135,33 @@ export const Branch = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {cabang.map((branch) => (
-              <TableRow key={branch.uuid}>
-                <TableCell>{branch.namacabang}</TableCell>
-                <TableCell>{branch.alamat}</TableCell>
-                <TableCell>{branch.koordinat}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => handleOpenModal(branch)}
-                    sx={{ marginRight: 1 }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={() => handleDeleteCabang(branch.uuid)}
-                  >
-                    Hapus
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
+  {cabang.map((branch, index) => (
+    <TableRow key={branch.uuid}>
+      <TableCell>{index + 1}</TableCell>
+      <TableCell>{branch.namacabang}</TableCell>
+      <TableCell>{branch.alamat}</TableCell>
+      <TableCell>{branch.koordinat}</TableCell>
+      <TableCell>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => handleOpenModal(branch)}
+          sx={{ marginRight: 1 }}
+        >
+          Edit
+        </Button>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={() => handleDeleteCabang(branch.uuid)}
+        >
+          Hapus
+        </Button>
+      </TableCell>
+    </TableRow>
+  ))}
+</TableBody>
+
         </Table>
       </TableContainer>
 

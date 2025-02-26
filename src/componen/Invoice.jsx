@@ -8,6 +8,7 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableContainer,
   TableRow,
   TextField,
   Typography,
@@ -307,13 +308,9 @@ export const Invoice = () => {
             Export to Excel
           </Button>
         </Box>
-        {/* <Box p={2} display="flex" justifyContent="flex-end">
-        <Button variant="contained" color="primary" onClick={exportCabangToExcel}>
-          Export Cabang ke Excel
-        </Button>
-      </Box> */}
-      {/* Summary Cards */}
-      <Box p={2}>
+
+        {/* Summary Cards */}
+        <Box p={2}>
           <Grid container spacing={3}>
             <Grid item xs={12} md={4}>
               <Paper sx={{ p: 2, backgroundColor: '#f5f5f5' }}>
@@ -347,34 +344,40 @@ export const Invoice = () => {
             </Grid>
           </Grid>
         </Box>
+
+        {/* Data Table dengan Scroll untuk Mobile */}
         {Object.keys(detailPenjualan).length > 0 ? (
           Object.entries(detailPenjualan).map(([cabang, dataCabang]) => (
             <Box key={cabang} mb={4}>
               <Typography variant="h6" sx={{ p: 2 }}>
                 Cabang: {cabang}
               </Typography>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Nama Barang</TableCell>
-                    <TableCell>Kategori</TableCell>
-                    <TableCell>Harga Satuan</TableCell>
-                    <TableCell>Total Terjual</TableCell>
-                    <TableCell>Total Penjualan</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {Object.entries(dataCabang.barang || {}).map(([namaBarang, barangData]) => (
-                    <TableRow key={namaBarang}>
-                      <TableCell>{namaBarang}</TableCell>
-                      <TableCell>{barangData.kategori}</TableCell>
-                      <TableCell>{barangData.hargaSatuan}</TableCell>
-                      <TableCell>{barangData.totalTerjual}</TableCell>
-                      <TableCell>{barangData.totalPenjualan}</TableCell>
+
+              {/* Scroll Table */}
+              <TableContainer sx={{ maxWidth: "100%", overflowX: "auto" }}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Nama Barang</TableCell>
+                      <TableCell>Kategori</TableCell>
+                      <TableCell>Harga Satuan</TableCell>
+                      <TableCell>Total Terjual</TableCell>
+                      <TableCell>Total Penjualan</TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHead>
+                  <TableBody>
+                    {Object.entries(dataCabang.barang || {}).map(([namaBarang, barangData]) => (
+                      <TableRow key={namaBarang}>
+                        <TableCell>{namaBarang}</TableCell>
+                        <TableCell>{barangData.kategori}</TableCell>
+                        <TableCell>{barangData.hargaSatuan}</TableCell>
+                        <TableCell>{barangData.totalTerjual}</TableCell>
+                        <TableCell>{barangData.totalPenjualan}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
             </Box>
           ))
         ) : (

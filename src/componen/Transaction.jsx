@@ -73,12 +73,9 @@ export const Transaction = ({ userRole }) => {
     );
   }
 
-  // Sort transactions by date
   const transactions = [...(data.transaksi || [])].sort((a, b) => 
     new Date(b.createdAt) - new Date(a.createdAt)
   );
-
-  // Filter transactions
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesUsername = filters.username
       ? transaction.User?.username?.toLowerCase().includes(filters.username.toLowerCase())
@@ -222,6 +219,7 @@ export const Transaction = ({ userRole }) => {
           <Table sx={{ minWidth: 200 }}>
             <TableHead>
               <TableRow>
+                <TableCell>No</TableCell>
                 <TableCell>Transaction ID</TableCell>
                 <TableCell>Date</TableCell>
                 <TableCell>Total Amount</TableCell>
@@ -234,7 +232,7 @@ export const Transaction = ({ userRole }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedTransactions.map((transaction) => {
+              {paginatedTransactions.map((transaction, index) => {
                 const statusConfig = statusMap[transaction.status_pembayaran] || { label: 'Unknown', color: 'default' };
 
                 return (
@@ -244,6 +242,7 @@ export const Transaction = ({ userRole }) => {
                     onClick={(e) => handleRowClick(e, transaction)}
                     sx={{ cursor: 'pointer' }}
                   >
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{transaction.uuid}</TableCell>
                     <TableCell>{dayjs(transaction.tanggal).format('DD MMM YYYY')}</TableCell>
                     <TableCell>

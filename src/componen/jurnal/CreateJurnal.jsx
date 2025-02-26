@@ -13,7 +13,7 @@ import {
   Alert,
   Stack
 } from '@mui/material';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';  // ✅ Import mutate untuk auto-refresh
 import axios from 'axios';
 import { useSelector } from "react-redux";
 
@@ -39,11 +39,8 @@ export const CreateJurnal = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  // Fetch barang data for dropdown
-  const { data: barangData } = useSWR(
-    `${getApiBaseUrl()}/barang`,
-    fetcher
-  );
+  // ✅ Fetch barang dengan SWR
+  const { data: barangData } = useSWR(`${getApiBaseUrl()}/barang`, fetcher);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,30 +56,36 @@ export const CreateJurnal = () => {
     setError(null);
     setSuccess(null);
     const dataToSend = {
-        ...formData,
-        cabanguuid: formData.cabanguuid ? formData.cabanguuid : null
-      };
-      try {
-        const response = await axios.post(
-          `${getApiBaseUrl()}/createjurnal`,
-          dataToSend,
-          { withCredentials: true }
-        );
-        setSuccess(response.data.message);
-        setFormData({
-          cabanguuid: '',
-          jenis_transaksi: '',
-          baranguuid: '',
-          jumlah: '',
-          harga_satuan: '',
-          deskripsi: ''
-        });
-      } catch (err) {
-        setError(err.response?.data?.message || 'Terjadi kesalahan pada server');
-      } finally {
-        setLoading(false);
-      }
+      ...formData,
+      cabanguuid: formData.cabanguuid ? formData.cabanguuid : null
     };
+    
+    try {
+      const response = await axios.post(
+        `${getApiBaseUrl()}/createjurnal`,
+        dataToSend,
+        { withCredentials: true }
+      );
+      
+      setSuccess(response.data.message);
+      setFormData({
+        cabanguuid: '',
+        jenis_transaksi: 'pembelian',
+        baranguuid: '',
+        jumlah: '',
+        harga_satuan: '',
+        deskripsi: ''
+      });
+
+      // ✅ Auto-refresh jurnal setelah menambahkan data
+      mutate(`${getApiBaseUrl()}/getjurnal`);
+
+    } catch (err) {
+      setError(err.response?.data?.message || 'Terjadi kesalahan pada server');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box p={3}>
@@ -106,19 +109,6 @@ export const CreateJurnal = () => {
 
           <form onSubmit={handleSubmit}>
             <Stack spacing={3}>
-              {/* <FormControl fullWidth>
-                <InputLabel>Jenis Transaksi</InputLabel>
-                <Select
-                  name="jenis_transaksi"
-                  value={formData.jenis_transaksi}
-                  onChange={handleChange}
-                  required
-                >
-                  <MenuItem value="pembelian">Pembelian</MenuItem>
-                  <MenuItem value="penjualan">Penjualan</MenuItem>
-                </Select>
-              </FormControl> */}
-
               <FormControl fullWidth>
                 <InputLabel>Barang</InputLabel>
                 <Select

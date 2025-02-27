@@ -35,6 +35,8 @@ export const MonitorStock = () => {
   if (error) return <Typography color="error">Gagal mengambil data.</Typography>;
 
   const barangData = data?.data || [];
+  console.log("Data API:", barangData);
+
 
   return (
     <Box p={3}>
@@ -77,7 +79,13 @@ export const MonitorStock = () => {
                           {item.stok}
                         </Typography>
                       </TableCell>
-                      <TableCell>{item.Barang.Kategori.namakategori}</TableCell>
+                      {/* <TableCell>{item.Barang.Kategori?.namakategori || "Tanpa Kategori"}</TableCell> */}
+                      <TableCell>
+                      {item.Barang && item.Barang.Kategori ? item.Barang.Kategori.namakategori : "Tanpa Kategori"}
+                    </TableCell>
+
+
+
                     </TableRow>
                   ))
                 )}

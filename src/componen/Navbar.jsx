@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link,useNavigate,NavLink } from 'react-router-dom';
+import { Link, useNavigate, NavLink } from 'react-router-dom';
 import Avatar from '@mui/material/Avatar';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
@@ -10,12 +10,13 @@ import { Bell as BellIcon } from '@phosphor-icons/react/dist/ssr/Bell';
 import { List as ListIcon } from '@phosphor-icons/react/dist/ssr/List';
 import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
-import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { List, ListItemButton, Collapse } from '@mui/material';
-import { useSelector } from "react-redux";
+import { ExpandLess, ExpandMore, Person, ExitToApp } from '@mui/icons-material';
+import { List, ListItemButton, Collapse, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { useSelector, useDispatch } from "react-redux";
 import Sidebar from './Sidebar';
 import useSWR from "swr";
 import axios from "axios";
+import { Logout, reset } from '../fitur/AuthSlice';
 
 const getApiBaseUrl = () => {
   const protocol = window.location.protocol === "https:" ? "https" : "http";
@@ -26,13 +27,37 @@ const getApiBaseUrl = () => {
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
 export const Navbar = () => {
+  const dispatch = useDispatch();
   const [openDrawer, setOpenDrawer] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(false);
+  const [openProfileMenu, setOpenProfileMenu] = useState(false);
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const { data, error } = useSWR(`${getApiBaseUrl()}/getdistribusistok?status=pending`, fetcher, {
     refreshInterval: 5000, // Auto refresh setiap 5 detik
   });
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [open, setOpen] = useState(false);
+  
+  const handleLogoutClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setOpenConfirmDialog(true);
+    setOpenProfileMenu(false);
+  };
+  
+  const handleConfirmLogout = () => {
+    dispatch(Logout());
+    dispatch(reset());
+    navigate("/");
+    setOpenConfirmDialog(false);
+  };
+  
+  const handleCancelLogout = () => {
+    setOpenConfirmDialog(false);
+  };
 
   const pendingCount = data?.data?.length || 0;
 
@@ -47,6 +72,28 @@ export const Navbar = () => {
     event.stopPropagation();
     setOpenDropdown(!openDropdown);
   };
+
+  const handleProfileMenuClick = (event) => {
+    event.stopPropagation();
+    setOpenProfileMenu(!openProfileMenu);
+  };
+
+  const handleProfileClick = () => {
+    setOpenProfileMenu(false);
+    navigate("/profile");
+  };
+
+  // Click outside handler to close profile menu
+  React.useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenProfileMenu(false);
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
 
   return (
     <React.Fragment>
@@ -153,27 +200,65 @@ export const Navbar = () => {
               </Link>
             </Tooltip>
             <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-      {user && user.role === "admin" && (
-        <Tooltip title="Konfirmasi Distribusi Stok" component={NavLink} to="/confirm">
-          <IconButton>
-            <Badge badgeContent={pendingCount} color="error">
-              <BellIcon />
-            </Badge>
-          </IconButton>
-        </Tooltip>
-      )}
-      </Stack>
-            <Link to="/profile" style={{ textDecoration: 'none' }}>
-              <Avatar
+              {user && user.role === "admin" && (
+                <Tooltip title="Konfirmasi Distribusi Stok" component={NavLink} to="/confirm">
+                  <IconButton>
+                    <Badge badgeContent={pendingCount} color="error">
+                      <BellIcon />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Stack>
+
+            {/* Profile Avatar with Dropdown */}
+            <Box sx={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
+              <Tooltip title="Profile">
+                <IconButton onClick={handleProfileMenuClick}>
+                  <Avatar
+                    sx={{
+                      cursor: 'pointer',
+                      width: 40,
+                      height: 40,
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                    }}
+                  />
+                </IconButton>
+              </Tooltip>
+
+              {/* Profile Dropdown Menu */}
+              <Collapse
+                in={openProfileMenu}
+                timeout="auto"
                 sx={{
-                  cursor: 'pointer',
-                  width: 40,
-                  height: 40,
-                  bgcolor: 'primary.main',
-                  color: 'white',
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  width: '200px',
+                  backgroundColor: 'white',
+                  boxShadow: 3,
+                  zIndex: 1250,
+                  borderRadius: 1,
+                  mt: 1,
                 }}
-              />
-            </Link>
+              >
+                <List component="div" disablePadding>
+                  <ListItemButton onClick={handleProfileClick}>
+                    <ListItemIcon>
+                      <Person />
+                    </ListItemIcon>
+                    <ListItemText primary="Profile" />
+                  </ListItemButton>
+                  <ListItemButton onClick={handleLogoutClick}>
+                    <ListItemIcon>
+                      <ExitToApp />
+                    </ListItemIcon>
+                    <ListItemText primary="Logout" />
+                  </ListItemButton>
+                </List>
+              </Collapse>
+            </Box>
           </Stack>
         </Stack>
       </Box>
@@ -219,6 +304,28 @@ export const Navbar = () => {
           </Box>
         </Box>
       )}
+
+      {/* Logout Confirmation Dialog */}
+      <Dialog
+        open={openConfirmDialog}
+        onClose={handleCancelLogout}
+        aria-labelledby="alert-dialog-title"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Confirmation"}
+        </DialogTitle>
+        <DialogContent>
+          Are you sure you want to logout?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelLogout} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmLogout} color="primary" autoFocus>
+            Logout
+          </Button>
+        </DialogActions>
+      </Dialog>
     </React.Fragment>
   );
 };

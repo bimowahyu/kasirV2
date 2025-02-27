@@ -52,7 +52,7 @@ export const Sidebar = () => {
       sx={{
         bgcolor: '#1e293b',
         color: 'white',
-        display: 'flex',
+        display: { xs: 'block', lg: 'flex' },
         flexDirection: 'column',
         height: '100vh',
         width: { xs: 200, lg: 250 },
@@ -60,7 +60,7 @@ export const Sidebar = () => {
         top: 0,
         left: 0,
         zIndex: 1200,
-        overflow: 'hidden', // Changed from 'auto' to 'hidden'
+        overflow: 'auto', // Hide overflow for parent container
       }}
     >
       <Dialog
@@ -92,7 +92,7 @@ export const Sidebar = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Logo Section */}
+      {/* Logo Section - Fixed at top */}
       <Box
         sx={{
           display: 'flex',
@@ -101,9 +101,10 @@ export const Sidebar = () => {
           height: 60,
           p: 2,
           borderBottom: '1px solid #374151',
+          position: 'sticky',
+          top: 0,
           bgcolor: '#1e293b',
           zIndex: 2,
-          flexShrink: 0, // Prevent shrinking
         }}
       >
         <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
@@ -111,13 +112,13 @@ export const Sidebar = () => {
         </Typography>
       </Box>
 
-      {/* Scrollable Content (includes both navigation and logout) */}
+      {/* Scrollable Navigation Links */}
       <Box
         sx={{
           flex: 1,
           overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
+          height: 'calc(100vh - 120px)', // Viewport height minus header and footer space
+          p: 2,
           '&::-webkit-scrollbar': {
             width: '8px',
           },
@@ -135,364 +136,367 @@ export const Sidebar = () => {
           scrollbarColor: '#374151 #1e293b',
         }}
       >
-        {/* Navigation Section */}
-        <Box sx={{ p: 2, flex: 1 }}>
-          <Stack spacing={2}>
-            <Typography
-              component={NavLink}
-              to="/dashboard"
-              sx={{
-                textDecoration: 'none',
-                color: '#cbd5e1',
-                p: 1,
-                borderRadius: 1,
-                display: 'block',
-                '&:hover': { bgcolor: '#374151', color: 'white' },
-                '&.active': { bgcolor: '#374151', color: 'white' }, 
-              }}
-            >
-              Dashboard
-            </Typography>
-
-            <Typography
-              component={NavLink}
-              to="/userlist"
-              sx={{
-                textDecoration: 'none',
-                color: '#cbd5e1',
-                p: 1,
-                borderRadius: 1,
-                display: 'block',
-                '&:hover': { bgcolor: '#374151', color: 'white' },
-                '&.active': { bgcolor: '#374151', color: 'white' }, 
-              }}
-            >
-              User List
-            </Typography>
-            
-            <Typography
-              component={NavLink}
-              to="/transaction"
-              sx={{
-                textDecoration: 'none',
-                color: '#cbd5e1',
-                p: 1,
-                borderRadius: 1,
-                display: 'block',
-                '&:hover': { bgcolor: '#374151', color: 'white' },
-                '&.active': { bgcolor: '#374151', color: 'white' }, 
-              }}
-            >
-              Transaction
-            </Typography>
-
-            <Typography
-              component={NavLink}
-              to="/product"
-              sx={{
-                textDecoration: 'none',
-                color: '#cbd5e1',
-                p: 1,
-                borderRadius: 1,
-                display: 'block',
-                '&:hover': { bgcolor: '#374151', color: 'white' },
-                '&.active': { bgcolor: '#374151', color: 'white' }, 
-              }}
-            >
-              Product
-            </Typography>
-            
-            <Typography
-              component={NavLink}
-              to="/category"
-              sx={{
-                textDecoration: 'none',
-                color: '#cbd5e1',
-                p: 1,
-                borderRadius: 1,
-                display: 'block',
-                '&:hover': { bgcolor: '#374151', color: 'white' },
-                '&.active': { bgcolor: '#374151', color: 'white' }, 
-              }}
-            >
-              Category
-            </Typography>
-            
-            <Typography
-              component={NavLink}
-              to="/setprodukpercabang"
-              sx={{
-                textDecoration: 'none',
-                color: '#cbd5e1',
-                p: 1,
-                borderRadius: 1,
-                display: 'block',
-                '&:hover': { bgcolor: '#374151', color: 'white' },
-                '&.active': { bgcolor: '#374151', color: 'white' }, 
-              }}
-            >
-              Set Produk
-            </Typography>
-            {user && user.role === "superadmin" && (
-              <Typography
-                component={NavLink}
-                to="/send"
-                sx={{
-                  textDecoration: 'none',
-                  color: '#cbd5e1',
-                  p: 1,
-                  borderRadius: 1,
-                  display: 'block',
-                  '&:hover': { bgcolor: '#374151', color: 'white' },
-                  '&.active': { bgcolor: '#374151', color: 'white' }, 
-                }}
-              >
-                Send Product to Branch
-              </Typography>
-            )}
-            
-            {user && user.role === "superadmin" && (
-              <Typography
-                component={NavLink}
-                to="/branch"
-                sx={{
-                  textDecoration: 'none',
-                  color: '#cbd5e1',
-                  p: 1,
-                  borderRadius: 1,
-                  display: 'block',
-                  '&:hover': { bgcolor: '#374151', color: 'white' },
-                  '&.active': { bgcolor: '#374151', color: 'white' }, 
-                }}
-              >
-                Branch
-              </Typography>
-            )}
-            
-            {/* Dropdown Button */}
-            <ListItemButton onClick={handleClick} sx={{ color: '#cbd5e1', '&:hover': { bgcolor: '#374151', color: 'white' } }}>
-              <Typography variant="body1"> Invoice All</Typography>
-              {open ? <ExpandLess /> : <ExpandMore />}
-            </ListItemButton>
-
-            {/* Dropdown Content */}
-            <Collapse in={open} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
-                <ListItemButton
-                  component={NavLink}
-                  to="/laporan"
-                  sx={{
-                    textDecoration: 'none',
-                    color: '#cbd5e1',
-                    pl: 4,
-                    borderRadius: 1,
-                    '&:hover': { bgcolor: '#374151', color: 'white' },
-                    '&.active': { bgcolor: '#374151', color: 'white' },
-                  }}
-                >
-                  Invoice
-                </ListItemButton>
-               
-                <ListItemButton
-                  component={NavLink}
-                  to="/penjualankategori"
-                  sx={{
-                    textDecoration: 'none',
-                    color: '#cbd5e1',
-                    pl: 4,
-                    borderRadius: 1,
-                    '&:hover': { bgcolor: '#374151', color: 'white' },
-                    '&.active': { bgcolor: '#374151', color: 'white' },
-                  }}
-                >
-                  Category Sell Report
-                </ListItemButton>
-                <ListItemButton
-                  component={NavLink}
-                  to="/stockpages"
-                  sx={{
-                    textDecoration: 'none',
-                    color: '#cbd5e1',
-                    pl: 4,
-                    borderRadius: 1,
-                    '&:hover': { bgcolor: '#374151', color: 'white' },
-                    '&.active': { bgcolor: '#374151', color: 'white' },
-                  }}
-                >
-                  Stock
-                </ListItemButton>
-                <ListItemButton
-                  component={NavLink}
-                  to="/komprehensif"
-                  sx={{
-                    textDecoration: 'none',
-                    color: '#cbd5e1',
-                    pl: 4,
-                    borderRadius: 1,
-                    '&:hover': { bgcolor: '#374151', color: 'white' },
-                    '&.active': { bgcolor: '#374151', color: 'white' },
-                  }}
-                >
-                  Komprehensif
-                </ListItemButton>
-                
-                {user && user.role === "superadmin" && (
-                  <>
-                 <ListItemButton
-                  component={NavLink}
-                  to="/createjurnal"
-                  sx={{
-                    textDecoration: 'none',
-                    color: '#cbd5e1',
-                    pl: 4,
-                    borderRadius: 1,
-                    '&:hover': { bgcolor: '#374151', color: 'white' },
-                    '&.active': { bgcolor: '#374151', color: 'white' },
-                  }}
-                >
-                  Create Pembelian
-                </ListItemButton>
-                
-                <ListItemButton
-                  component={NavLink}
-                  to="/getjurnal"
-                  sx={{
-                    textDecoration: 'none',
-                    color: '#cbd5e1',
-                    pl: 4,
-                    borderRadius: 1,
-                    '&:hover': { bgcolor: '#374151', color: 'white' },
-                    '&.active': { bgcolor: '#374151', color: 'white' },
-                  }}
-                >
-                  Jurnal
-                </ListItemButton>
-                </>
-                )}
-                
-              </List>
-            </Collapse>
-            
-            {user && user.role === "admin" && (
-              <Typography
-                component={NavLink}
-                to="/confirm"
-                sx={{
-                  textDecoration: 'none',
-                  color: '#cbd5e1',
-                  p: 1,
-                  borderRadius: 1,
-                  display: 'block',
-                  '&:hover': { bgcolor: '#374151', color: 'white' },
-                  '&.active': { bgcolor: '#374151', color: 'white' }, 
-                }}
-              >
-                Confrim Product
-              </Typography>
-            )}
-              {user && user.role === "admin" && (
-            <Typography
-              component={NavLink}
-              to="/stockcabang"
-              sx={{
-                textDecoration: 'none',
-                color: '#cbd5e1',
-                p: 1,
-                borderRadius: 1,
-                display: 'block',
-                '&:hover': { bgcolor: '#374151', color: 'white' },
-                '&.active': { bgcolor: '#374151', color: 'white' }, 
-              }}
-            >
-              Stock Product
-            </Typography>
-              )}
-                {user && user.role === "superadmin" && (
-            <Typography
-              component={NavLink}
-              to="/stockallbranch"
-              sx={{
-                textDecoration: 'none',
-                color: '#cbd5e1',
-                p: 1,
-                borderRadius: 1,
-                display: 'block',
-                '&:hover': { bgcolor: '#374151', color: 'white' },
-                '&.active': { bgcolor: '#374151', color: 'white' }, 
-              }}
-            >
-              Stock Product All Branch
-            </Typography>
-              )}
-            <Typography
-              component={NavLink}
-              to="/mutasi"
-              sx={{
-                textDecoration: 'none',
-                color: '#cbd5e1',
-                p: 1,
-                borderRadius: 1,
-                display: 'block',
-                '&:hover': { bgcolor: '#374151', color: 'white' },
-                '&.active': { bgcolor: '#374151', color: 'white' }, 
-              }}
-            >
-              History Product
-            </Typography>
-            
-            {user && user.role === "superadmin" && (
-              <Typography
-                component={NavLink}
-                to="/wearhouse"
-                sx={{
-                  textDecoration: 'none',
-                  color: '#cbd5e1',
-                  p: 1,
-                  borderRadius: 1,
-                  display: 'block',
-                  '&:hover': { bgcolor: '#374151', color: 'white' },
-                  '&.active': { bgcolor: '#374151', color: 'white' }, 
-                }}
-              >
-               Warehouse
-              </Typography>
-            )}
-               <Button
-            onClick={handleLogoutClick}
+        <Stack spacing={2}>
+          <Typography
+            component={NavLink}
+            to="/dashboard"
             sx={{
-              width: "100%",
-              justifyContent: "flex-start",
-              color: "#cbd5e1",
-              p: 1.5,
+              textDecoration: 'none',
+              color: '#cbd5e1',
+              p: 1,
               borderRadius: 1,
-              textTransform: "none",
-              transition: "all 0.3s ease",
-              "&:hover": {
-                bgcolor: "#EF4444",
-                color: "white",
-                transform: "scale(1.05)", 
-              },
-              minHeight: "48px",
-              touchAction: "manipulation",
+              display: 'block',
+              '&:hover': { bgcolor: '#374151', color: 'white' },
+              '&.active': { bgcolor: '#374151', color: 'white' }, 
             }}
-            startIcon={<LogoutOutlined />}
           >
-            Log Out
-          </Button>
-          </Stack>
-        </Box>
+            Dashboard
+          </Typography>
 
-        {/* Logout Button - Now part of the scrollable area */}
-        {/* <Box
-          sx={{
-            p: 2,
-            borderTop: '1px solid #374151',
-            mt: 'auto',
-            flexShrink: 0, // Prevent shrinking
-          }}
-        >
+          <Typography
+            component={NavLink}
+            to="/userlist"
+            sx={{
+              textDecoration: 'none',
+              color: '#cbd5e1',
+              p: 1,
+              borderRadius: 1,
+              display: 'block',
+              '&:hover': { bgcolor: '#374151', color: 'white' },
+              '&.active': { bgcolor: '#374151', color: 'white' }, 
+            }}
+          >
+            User List
+          </Typography>
+          
+          <Typography
+            component={NavLink}
+            to="/transaction"
+            sx={{
+              textDecoration: 'none',
+              color: '#cbd5e1',
+              p: 1,
+              borderRadius: 1,
+              display: 'block',
+              '&:hover': { bgcolor: '#374151', color: 'white' },
+              '&.active': { bgcolor: '#374151', color: 'white' }, 
+            }}
+          >
+            Transaction
+          </Typography>
+
+          <Typography
+            component={NavLink}
+            to="/product"
+            sx={{
+              textDecoration: 'none',
+              color: '#cbd5e1',
+              p: 1,
+              borderRadius: 1,
+              display: 'block',
+              '&:hover': { bgcolor: '#374151', color: 'white' },
+              '&.active': { bgcolor: '#374151', color: 'white' }, 
+            }}
+          >
+            Product
+          </Typography>
+          
+          <Typography
+            component={NavLink}
+            to="/category"
+            sx={{
+              textDecoration: 'none',
+              color: '#cbd5e1',
+              p: 1,
+              borderRadius: 1,
+              display: 'block',
+              '&:hover': { bgcolor: '#374151', color: 'white' },
+              '&.active': { bgcolor: '#374151', color: 'white' }, 
+            }}
+          >
+            Category
+          </Typography>
+          
+          <Typography
+            component={NavLink}
+            to="/setprodukpercabang"
+            sx={{
+              textDecoration: 'none',
+              color: '#cbd5e1',
+              p: 1,
+              borderRadius: 1,
+              display: 'block',
+              '&:hover': { bgcolor: '#374151', color: 'white' },
+              '&.active': { bgcolor: '#374151', color: 'white' }, 
+            }}
+          >
+            Set Produk
+          </Typography>
+          {user && user.role === "superadmin" && (
+            <Typography
+              component={NavLink}
+              to="/send"
+              sx={{
+                textDecoration: 'none',
+                color: '#cbd5e1',
+                p: 1,
+                borderRadius: 1,
+                display: 'block',
+                '&:hover': { bgcolor: '#374151', color: 'white' },
+                '&.active': { bgcolor: '#374151', color: 'white' }, 
+              }}
+            >
+              Send Product to Branch
+            </Typography>
+          )}
+          
+          {user && user.role === "superadmin" && (
+            <Typography
+              component={NavLink}
+              to="/branch"
+              sx={{
+                textDecoration: 'none',
+                color: '#cbd5e1',
+                p: 1,
+                borderRadius: 1,
+                display: 'block',
+                '&:hover': { bgcolor: '#374151', color: 'white' },
+                '&.active': { bgcolor: '#374151', color: 'white' }, 
+              }}
+            >
+              Branch
+            </Typography>
+          )}
+          {/* Dropdown Button */}
+          <ListItemButton onClick={handleClick} sx={{ color: '#cbd5e1', '&:hover': { bgcolor: '#374151', color: 'white' } }}>
+            <Typography variant="body1"> Invoice All</Typography>
+            {open ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+
+          {/* Dropdown Content */}
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              <ListItemButton
+                component={NavLink}
+                to="/laporan"
+                sx={{
+                  textDecoration: 'none',
+                  color: '#cbd5e1',
+                  pl: 4,
+                  borderRadius: 1,
+                  '&:hover': { bgcolor: '#374151', color: 'white' },
+                  '&.active': { bgcolor: '#374151', color: 'white' },
+                }}
+              >
+                Invoice
+              </ListItemButton>
+             
+              <ListItemButton
+                component={NavLink}
+                to="/penjualankategori"
+                sx={{
+                  textDecoration: 'none',
+                  color: '#cbd5e1',
+                  pl: 4,
+                  borderRadius: 1,
+                  '&:hover': { bgcolor: '#374151', color: 'white' },
+                  '&.active': { bgcolor: '#374151', color: 'white' },
+                }}
+              >
+                Category Sell Report
+              </ListItemButton>
+              <ListItemButton
+                component={NavLink}
+                to="/stockpages"
+                sx={{
+                  textDecoration: 'none',
+                  color: '#cbd5e1',
+                  pl: 4,
+                  borderRadius: 1,
+                  '&:hover': { bgcolor: '#374151', color: 'white' },
+                  '&.active': { bgcolor: '#374151', color: 'white' },
+                }}
+              >
+                Stock
+              </ListItemButton>
+              <ListItemButton
+                component={NavLink}
+                to="/komprehensif"
+                sx={{
+                  textDecoration: 'none',
+                  color: '#cbd5e1',
+                  pl: 4,
+                  borderRadius: 1,
+                  '&:hover': { bgcolor: '#374151', color: 'white' },
+                  '&.active': { bgcolor: '#374151', color: 'white' },
+                }}
+              >
+                Komprehensif
+              </ListItemButton>
+              
+              {user && user.role === "superadmin" && (
+                <>
+               <ListItemButton
+                component={NavLink}
+                to="/createjurnal"
+                sx={{
+                  textDecoration: 'none',
+                  color: '#cbd5e1',
+                  pl: 4,
+                  borderRadius: 1,
+                  '&:hover': { bgcolor: '#374151', color: 'white' },
+                  '&.active': { bgcolor: '#374151', color: 'white' },
+                }}
+              >
+                Create Pembelian
+              </ListItemButton>
+              
+              <ListItemButton
+                component={NavLink}
+                to="/getjurnal"
+                sx={{
+                  textDecoration: 'none',
+                  color: '#cbd5e1',
+                  pl: 4,
+                  borderRadius: 1,
+                  '&:hover': { bgcolor: '#374151', color: 'white' },
+                  '&.active': { bgcolor: '#374151', color: 'white' },
+                }}
+              >
+                Jurnal
+              </ListItemButton>
+              </>
+              )}
+              
+            </List>
+          </Collapse>
+          
+        
+      
+
+          
+          {user && user.role === "admin" && (
+            <Typography
+              component={NavLink}
+              to="/confirm"
+              sx={{
+                textDecoration: 'none',
+                color: '#cbd5e1',
+                p: 1,
+                borderRadius: 1,
+                display: 'block',
+                '&:hover': { bgcolor: '#374151', color: 'white' },
+                '&.active': { bgcolor: '#374151', color: 'white' }, 
+              }}
+            >
+              Confrim Product
+            </Typography>
+          )}
+            {user && user.role === "admin" && (
+          <Typography
+            component={NavLink}
+            to="/stockcabang"
+            sx={{
+              textDecoration: 'none',
+              color: '#cbd5e1',
+              p: 1,
+              borderRadius: 1,
+              display: 'block',
+              '&:hover': { bgcolor: '#374151', color: 'white' },
+              '&.active': { bgcolor: '#374151', color: 'white' }, 
+            }}
+          >
+            Stock Product
+          </Typography>
+            )}
+              {user && user.role === "superadmin" && (
+          <Typography
+            component={NavLink}
+            to="/stockallbranch"
+            sx={{
+              textDecoration: 'none',
+              color: '#cbd5e1',
+              p: 1,
+              borderRadius: 1,
+              display: 'block',
+              '&:hover': { bgcolor: '#374151', color: 'white' },
+              '&.active': { bgcolor: '#374151', color: 'white' }, 
+            }}
+          >
+            Stock Product All Branch
+          </Typography>
+            )}
+          <Typography
+            component={NavLink}
+            to="/mutasi"
+            sx={{
+              textDecoration: 'none',
+              color: '#cbd5e1',
+              p: 1,
+              borderRadius: 1,
+              display: 'block',
+              '&:hover': { bgcolor: '#374151', color: 'white' },
+              '&.active': { bgcolor: '#374151', color: 'white' }, 
+            }}
+          >
+            History Product
+          </Typography>
+          
+        
          
-        </Box> */}
+          {user && user.role === "superadmin" && (
+            <Typography
+              component={NavLink}
+              to="/wearhouse"
+              sx={{
+                textDecoration: 'none',
+                color: '#cbd5e1',
+                p: 1,
+                borderRadius: 1,
+                display: 'block',
+                '&:hover': { bgcolor: '#374151', color: 'white' },
+                '&.active': { bgcolor: '#374151', color: 'white' }, 
+              }}
+            >
+             Warehouse
+            </Typography>
+          )}
+        </Stack>
+      </Box>
+
+      {/* Footer with Logout Button - Fixed at bottom */}
+      <Box
+        sx={{
+          p: 2,
+          borderTop: '1px solid #374151',
+          position: 'sticky',
+          bottom: 0,
+          bgcolor: '#1e293b',
+          zIndex: 2,
+        }}
+      >
+        <Button
+          onClick={handleLogoutClick}
+          sx={{
+            width: "100%",
+            justifyContent: "flex-start",
+            color: "#cbd5e1",
+            p: 1.5,
+            borderRadius: 1,
+            textTransform: "none",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              bgcolor: "#EF4444",
+              color: "white",
+              transform: "scale(1.05)", 
+            },
+            minHeight: "48px",
+            touchAction: "manipulation",
+          }}
+          startIcon={<LogoutOutlined />}
+        >
+          Log Out
+        </Button>
       </Box>
     </Box>
   );
